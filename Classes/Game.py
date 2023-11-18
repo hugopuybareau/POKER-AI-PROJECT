@@ -3,16 +3,7 @@ class Game :
         self.username = username
         self.players_name = players_name
         self.hand = hand
-<<<<<<< Updated upstream
         self.cards = [None] * 5
-=======
-        self.cards = None
-        self.prize_bb = None
-        self.pot_bb = None
-        
-
-        
->>>>>>> Stashed changes
 
     #TODO
     def updatePlayers(self) :
