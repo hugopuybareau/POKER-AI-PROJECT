@@ -1,5 +1,13 @@
 class Game :
-    def __init__(self, players_name : list, hand : list, position : int) :
+    def __init__(self, username : str, players_name : list, hand : list) :
+        self.username = username
         self.players_name = players_name
         self.hand = hand
-        self.position = position
+        self.cards = None
+
+    #TODO
+    def updatePlayers(self) :
+        self.players = None
+
+    def updateCards(self, cards : list) :
+        self.cards = cards
