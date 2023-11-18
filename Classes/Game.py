@@ -3,7 +3,7 @@ class Game :
         self.username = username
         self.players_name = players_name
         self.hand = hand
-        self.cards = None
+        self.cards = [None] * 5
 
     #TODO
     def updatePlayers(self) :
