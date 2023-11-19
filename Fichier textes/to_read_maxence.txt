@@ -5,4 +5,8 @@ de faire un truc plus opti en utilisant que la longueur d'un
 set est différente de la longueur de la liste équivalente si 
 y'a deux éléments identiques à l'intérieur. 
 
+Et je crois que ce que j'ai fait dans sortByRank dans Card ça 
+marche pas parce que je comprends pas ce que c'est 
+self._lst
+
 ######## END ########

@@ -54,8 +54,10 @@ class Table :
         return -1 #Not threeOfAKind
     
     def getStraightValue(self, hand : Hand) : #I want the function to be able to recognize wether and straight index is associated to a hand card or a table card
-        straight = [i for i in range (4)] 
-        if 
+        for i in range(9):
+            straight = [k for k in range (i, i+5)] 
+
+        
 
 
 
@@ -70,7 +72,9 @@ class Hand :
         return self._lst[item]
     
     def sortByRank(self) : 
-        
+        if self._lst[1].rank > self._lst[0].rank :
+            self._lst[0], self._lst[1] = self._lst[1], self._lst[0]
+
         
 class Card :
 
