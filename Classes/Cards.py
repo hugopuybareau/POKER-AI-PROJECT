@@ -1,65 +1,4 @@
-class Table :
-    def __init__(self) :
-        self._cards = [None] * 5   
-
-    def __setitem__(self, item, value):
-        self._cards[item]=value
-
-    def __len__(self) :
-        return len(self._cards)
-
-    def __getitem__(self, item):
-        return self._cards[item]
-
-    def getPairValue(self, hand : Hand) :
-        if hand[0].rank == hand[1].rank :
-            return hand[0].rank
-        for i in [0, 1] :
-            for j in range(len(self._cards)) :
-                if hand[i].rank == self[j].rank :
-                    return (hand[i].rank)
-        return -1
-
-    def getDoublePairValue(self, hand : Hand) :
-        rank1 = -1
-        rank2 = -1
-        if hand[0].rank == hand[1].rank :
-            rank1 = hand[0].rank
-        for i in [0, 1]:
-            for j in range(len(self._cards)):
-                if hand[i].rank == self[j].rank : 
-                    rank2 = hand[i].rank
-                if rank1 == -1 : 
-                    rank1, rank2 = rank2, rank1
-        if rank1 < rank2 : 
-            rank1, rank2 = rank2, rank1 
-        return [rank1, rank2]
-
-    
-    def getThreeOfAKindValue(self, hand : Hand) :
-        if hand[0].rank == hand[1].rank : #pair in the hand
-            for j in range(len(self._cards)) : 
-                if hand[0].rank == self[j].rank : 
-                    return hand[0].rank
-        for i in [0, 1] : #pair on the table
-            for j in range(len(self._cards)) : 
-                for k in range(len(self._cards)) : 
-                    if hand[i].rank==self[j].rank==self[k].rank :
-                        return hand[0].rank
-        for i in range(len(self._cards)) : #Three of a kind on the table
-            for j in range(len(self._cards)) : 
-                for k in range(len(self._cards)) : 
-                    if self[i].rank==self[j].rank==self[k].rank :
-                        return self[i].rank 
-        return -1 #Not threeOfAKind
-    
-    def getStraightValue(self, hand : Hand) : #I want the function to be able to recognize wether and straight index is associated to a hand card or a table card
-        for i in range(9):
-            straight = [k for k in range (i, i+5)] 
-
-        
-
-
+from itertools import combinations
 
 class Hand : 
     def __init__(self, hand):
@@ -75,13 +14,118 @@ class Hand :
         if self._lst[1].rank > self._lst[0].rank :
             self._lst[0], self._lst[1] = self._lst[1], self._lst[0]
 
-        
+class Table :
+    def __init__(self) :
+        self._cards = [None] * 5   
+
+    def __setitem__(self, item, value):
+        self._cards[item]=value
+
+    def __len__(self) :
+        return len(self._cards)
+
+    def __getitem__(self, item):
+        return self._cards[item]
+    
+    def getQuinteFlushValue(self, hand : Hand) :
+        cards = self + hand
+        rank = -1
+        for subs in combinations(cards, 5) :
+            suits = set(card.suit for card in subs)
+            if len(suits) == 1:
+                ranks = sorted(card.rank for card in subs)
+                if all(ranks[i] == ranks[i-1] + 1 for i in range(1, len(ranks))) :
+                    rank = max(rank, ranks[-1])
+        return rank
+    
+    def getFourOfAKindValue(self, hand : Hand) :
+        cards = self + hand
+        rank = -1
+        ranks_sorted = sorted(card.rank for card in cards)
+        for i in range(5) :
+            sub_ranks = ranks_sorted[i:i+4]
+            if all(sub_ranks[i] == sub_ranks[i-1] for i in range(1, len(sub_ranks))) :
+                rank = max(rank, sub_ranks[-1])
+        return rank
+    
+    def getFullHouseValue(self, hand : Hand):
+        cards = self + hand
+        rank_3, rank_2 = -1, -1
+        for subs in combinations(cards, 5):
+            ranks = sorted(card.rank for card in subs)
+            if len(set(ranks)) == 2:
+                count_1 = ranks.count(ranks[0])
+                count_2 = ranks.count(ranks[-1])
+                if (count_1 == 2 and count_2 == 3) or (count_1 == 3 and count_2 == 2):
+                    rank_3 = max(rank_3, ranks[2])
+                    rank_2 = max(rank_2, ranks[0 if count_1 == 2 else -1])
+        return rank_3, rank_2
+    
+    def getFlushValue(self, hand : Hand) :
+        cards = self + hand
+        rank = [-1]*5
+        for subs in combinations(cards, 5) :
+            suits = set(card.suit for card in subs)
+            if len(suits) == 1 :
+                ranks = sorted([card.rank for card in cards], reverse=True)
+                j = 0
+                while ranks[j] == rank[j] :
+                    j+=1
+                if j < 5 and ranks[j] > rank[j] :
+                    rank = ranks
+
+    def getStraightValue(self, hand : Hand) :
+        cards = self + hand
+        rank = -1
+        ranks_sorted = sorted(card.rank for card in cards)
+        for i in range(4) :
+            sub_ranks = ranks_sorted[i:i+5]
+            if all(sub_ranks[i] == sub_ranks[i-1] + 1 for i in range(1, len(sub_ranks))) :
+                rank = max(rank, sub_ranks[-1])
+        return rank
+    
+    def getThreeOfAKindValue(self, hand : Hand) :
+        cards = self + hand
+        rank = -1
+        ranks_sorted = sorted(card.rank for card in cards)
+        for i in range(6) :
+            sub_ranks = ranks_sorted[i:i+3]
+            if all(sub_ranks[i] == sub_ranks[i-1] for i in range(1, len(sub_ranks))) :
+                rank = max(rank, sub_ranks[-1])
+        return rank
+
+    def getDoublePairValue(self, hand : Hand) :
+        cards = self + hand
+        rank1, rank2 = -1, -1
+        for subs in combinations(cards, 4) :
+            ranks = sorted(card.rank for card in subs)
+            count_1 = ranks.count(ranks[0])
+            count_2 = ranks.count(ranks[-1])
+            if count_1 == 2 and count_1 == 2 :
+                rank2 = max(ranks[-1], rank2)
+                rank1 = max(ranks[0], rank1)
+        return rank2, rank1
+            
+    def getPairValue(self, hand : Hand) :
+        cards = self + hand
+        rank = -1
+        for subs in combinations(cards, 2):
+            ranks = set(card.rank for card in subs)
+            if len(ranks) == 1 :
+                rank = max(rank, ranks[-1])
+        return rank
+    
+    def getHighCardValue(self, hand : Hand) :
+        cards = self + hand
+        return sorted(card.rank for card in cards)[-1]
+
 class Card :
 
-    ranks=[i for i in range(13)] #Plus simple pour comparer les cartes 
+    ranks=['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
+    #ranks=[i for i in range(13)] #Plus simple pour comparer les cartes 
     suits=['h', 'c', 's', 'd']
 
-    def __init__(self, rank, suit) : 
+    def __init__(self, rank, suit) :
         self.rank = Card.ranks.index(rank)
         self.suit = Card.suits.index(suit)
 
@@ -90,6 +134,9 @@ class Card :
 
     def getRank(self) : 
         return self.rank
+    
+if __name__ == "__main__" :
+    
 
     
 
