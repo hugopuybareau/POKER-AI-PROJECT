@@ -193,7 +193,7 @@ class Hand :
             self._cards = [self._cards[1], self._cards[0]]
         elif self._cards[1].rank == self._cards[0].rank and self._cards[1].suit > self._cards[0].suit :
             self._cards = [self._cards[1], self._cards[0]]
-
+    
 class Table :
     def __init__(self, cards = None) :
         if cards is None :
@@ -311,6 +311,7 @@ class Table :
                      getThreeOfAKindValue, getDoublePairValue,
                      getPairValue, getHighCardValue]
     shifts = [56, 52, 44, 24, 20, 16, 8, 4, 0]
+
     """
         
     Value de rank pour la plupart a besoin de 13 valeurs différent : 4 bits
@@ -413,3 +414,4 @@ if __name__ == "__main__" :
 
     #print(f"{int(nb_won/nb_try*100*100)/100}%")
     print(storage)
+

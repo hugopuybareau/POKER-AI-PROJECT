@@ -1,7 +1,10 @@
 from Players import Player, MainPlayer
-from Cards import Hand
+from Cards import *
+
+decision_rates = [0.5 , 0.5 , 0.5 , 0.2, 0.15]
 
 class Game :
+
     def __init__(self, username : str, players_name : list, players_prize_bb : list) :
         
         self.username = username
@@ -10,6 +13,8 @@ class Game :
         self.players = []
         
         self.initPlayers(players_name, players_prize_bb)
+
+        self.decision_rate = decision_rates[len(players_name)]
 
     def initPlayers(self, players_name : list, players_prize_bb : list) :
         players = []
@@ -29,8 +34,7 @@ class Game :
                 count += 1
             
         return count == len(self.players)
-
-        
+    
 class Round :
 
     stage={0 : 'pre_flop_bet', 1 : 'flop_bet', 2 : 'turn_bet', 3 : 'river_bet'}
@@ -49,8 +53,10 @@ class Round :
     def updatePotBB(self, pot_bb : float) : 
         self.pot_bb = pot_bb
     
-    def updateStrategy(self, strategy : list) : 
+    def updateStrategy(self, strategy : list, table : Table, hand : Hand, ) : 
         self.strategy = strategy
+
+
 
 
     
