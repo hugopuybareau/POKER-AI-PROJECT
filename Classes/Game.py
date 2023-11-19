@@ -3,6 +3,7 @@ from Cards import Hand
 
 class Game :
     def __init__(self, username : str, players_name : list, players_prize_bb : list) :
+        
         self.username = username
 
         self.main_player = None
