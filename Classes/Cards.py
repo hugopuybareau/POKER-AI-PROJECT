@@ -34,8 +34,9 @@ class Table :
         if rank1 < rank2 : 
             rank1, rank2 = rank2, rank1 
         return [rank1, rank2]
+
     
-    def getThreeOfAKind(self, hand : Hand) :
+    def getThreeOfAKindValue(self, hand : Hand) :
         if hand[0].rank == hand[1].rank : #pair in the hand
             for j in range(len(self._cards)) : 
                 if hand[0].rank == self[j].rank : 
@@ -50,15 +51,13 @@ class Table :
                 for k in range(len(self._cards)) : 
                     if self[i].rank==self[j].rank==self[k].rank :
                         return self[i].rank 
-                    
-    def 
+        return -1 #Not threeOfAKind
+    
+    def getStraightValue(self, hand : Hand) : #I want the function to be able to recognize wether and straight index is associated to a hand card or a table card
+        straight = [i for i in range (4)] 
+        if 
 
-        
 
-        
-
-        
-            
 
 class Hand : 
     def __init__(self, hand):
@@ -69,6 +68,9 @@ class Hand :
 
     def __getitem__(self, item):
         return self._lst[item]
+    
+    def sortByRank(self) : 
+        
         
 class Card :
 
