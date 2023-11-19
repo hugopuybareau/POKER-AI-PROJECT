@@ -1,7 +1,7 @@
 from Players import Player, MainPlayer
 from Cards import *
 
-decision_rates = [0.5 , 0.5 , 0.5 , 0.2, 0.15]
+decision_rates = [0.5 , 0.5 , 0.5 , 0.2, 0.15, 0, 0] 
 
 class Game :
 
@@ -37,15 +37,16 @@ class Game :
     
 class Round :
 
-    stage={0 : 'pre_flop_bet', 1 : 'flop_bet', 2 : 'turn_bet', 3 : 'river_bet'}
-    deal_card=[0,3,1,1]
+    stage = {0 : 'pre_flop_bet', 1 : 'flop_bet', 2 : 'turn_bet', 3 : 'river_bet'}
+    decisions = {0 : 'check_flop', 1 : 'check', 2 : 'call', 3 :'2_bet', 4 : '3_bet', 5 : 'all_in'}
+    positions =  {0: 'small_blind', 1 : 'big_blind', 2 : 'utg_0', 3 : 'utg_1', 4 : 'utg_2', 5 : 'utg_3', 6 : 'utg_4', 7 : 'utg_5'}
 
     def __init__(self, main_player : MainPlayer, players : list, hand : Hand, button : int, pot_bb : float, stage=0) :
-        self.button = position
         self.pot_bb = pot_bb
-        self.strategy = []
+        self.decision = []
         self.cards = []
         self.players = []
+        self.decision_rate = decision_rates[len(players)]
 
     def updateCards(self, cards : list) :
         self.cards = cards
@@ -53,8 +54,12 @@ class Round :
     def updatePotBB(self, pot_bb : float) : 
         self.pot_bb = pot_bb
     
-    def updateStrategy(self, strategy : list, table : Table, hand : Hand, ) : 
-        self.strategy = strategy
+    def updateDecision(self, stage, decisions, table : Table, hand : Hand, pot_bb) : 
+        if stage == 0 : 
+            if self.main_player.position == 0 :
+                if pot_bb > 4 :
+                    self.decision.append(decisions[2])
+
 
 
 
