@@ -1,4 +1,5 @@
 from itertools import combinations
+import random as rd
 
 {"A-A":[85.3,73.4,63.9,55.9,49.2,43.6,38.8,34.7,31.1],
 "A-Ks":[67.0,50.7,41.4,35.4,31.1,27.7,25.0,22.7,20.7],
@@ -172,21 +173,36 @@ from itertools import combinations
 
 class Hand : 
     def __init__(self, hand):
-        self._lst = hand
+        self._cards = hand
+        self.sortByRank()
+
+    def __add__(self, other) :
+        return self._cards + other._cards
 
     def __setitem__(self, item, value):
-        self._lst[item]=value
+        self._cards[item]=value
 
     def __getitem__(self, item):
-        return self._lst[item]
+        return self._cards[item]
     
+    def __str__(self) :
+        return str(self._cards[0])+"-"+str(self._cards[1])
+
     def sortByRank(self) : 
-        if self._lst[1].rank > self._lst[0].rank :
-            self._lst[0], self._lst[1] = self._lst[1], self._lst[0]
+        if self._cards[1].rank > self._cards[0].rank :
+            self._cards = [self._cards[1], self._cards[0]]
+        elif self._cards[1].rank == self._cards[0].rank and self._cards[1].suit > self._cards[0].suit :
+            self._cards = [self._cards[1], self._cards[0]]
 
 class Table :
-    def __init__(self) :
-        self._cards = [None] * 5   
+    def __init__(self, cards = None) :
+        if cards is None :
+            self._cards = [None] * 5
+        else :
+            self._cards = cards
+
+    def __add__(self, other) :
+        return self._cards + other._cards
 
     def __setitem__(self, item, value):
         self._cards[item]=value
@@ -206,7 +222,7 @@ class Table :
                 ranks = sorted(card.rank for card in subs)
                 if all(ranks[i] == ranks[i-1] + 1 for i in range(1, len(ranks))) :
                     rank = max(rank, ranks[-1])
-        return rank
+        return [rank]
     
     def getFourOfAKindValue(self, hand : Hand) :
         cards = self + hand
@@ -216,7 +232,7 @@ class Table :
             sub_ranks = ranks_sorted[i:i+4]
             if all(sub_ranks[i] == sub_ranks[i-1] for i in range(1, len(sub_ranks))) :
                 rank = max(rank, sub_ranks[-1])
-        return rank
+        return [rank]
     
     def getFullHouseValue(self, hand : Hand):
         cards = self + hand
@@ -229,7 +245,7 @@ class Table :
                 if (count_1 == 2 and count_2 == 3) or (count_1 == 3 and count_2 == 2):
                     rank_3 = max(rank_3, ranks[2])
                     rank_2 = max(rank_2, ranks[0 if count_1 == 2 else -1])
-        return rank_3, rank_2
+        return [rank_3, rank_2]
     
     def getFlushValue(self, hand : Hand) :
         cards = self + hand
@@ -239,10 +255,11 @@ class Table :
             if len(suits) == 1 :
                 ranks = sorted([card.rank for card in cards], reverse=True)
                 j = 0
-                while ranks[j] == rank[j] :
+                while ranks[j] == rank[j] and j < 5:
                     j+=1
                 if j < 5 and ranks[j] > rank[j] :
                     rank = ranks
+        return rank
 
     def getStraightValue(self, hand : Hand) :
         cards = self + hand
@@ -252,7 +269,7 @@ class Table :
             sub_ranks = ranks_sorted[i:i+5]
             if all(sub_ranks[i] == sub_ranks[i-1] + 1 for i in range(1, len(sub_ranks))) :
                 rank = max(rank, sub_ranks[-1])
-        return rank
+        return [rank]
     
     def getThreeOfAKindValue(self, hand : Hand) :
         cards = self + hand
@@ -262,7 +279,7 @@ class Table :
             sub_ranks = ranks_sorted[i:i+3]
             if all(sub_ranks[i] == sub_ranks[i-1] for i in range(1, len(sub_ranks))) :
                 rank = max(rank, sub_ranks[-1])
-        return rank
+        return [rank]
 
     def getDoublePairValue(self, hand : Hand) :
         cards = self + hand
@@ -271,10 +288,10 @@ class Table :
             ranks = sorted(card.rank for card in subs)
             count_1 = ranks.count(ranks[0])
             count_2 = ranks.count(ranks[-1])
-            if count_1 == 2 and count_1 == 2 :
+            if count_1 == 2 and count_2 == 2 :
                 rank2 = max(ranks[-1], rank2)
                 rank1 = max(ranks[0], rank1)
-        return rank2, rank1
+        return [rank2, rank1]
             
     def getPairValue(self, hand : Hand) :
         cards = self + hand
@@ -282,23 +299,48 @@ class Table :
         for subs in combinations(cards, 2):
             ranks = set(card.rank for card in subs)
             if len(ranks) == 1 :
-                rank = max(rank, ranks[-1])
-        return rank
+                rank = max(rank, list(ranks)[-1])
+        return [rank]
     
     def getHighCardValue(self, hand : Hand) :
         cards = self + hand
-        return sorted(card.rank for card in cards)[-1]
+        return [sorted(card.rank for card in cards)[-1]]
     
     funcs = [getQuinteFlushValue, getFourOfAKindValue,
                      getFullHouseValue, getFlushValue, getStraightValue,
                      getThreeOfAKindValue, getDoublePairValue,
                      getPairValue, getHighCardValue]
+    shifts = [56, 52, 44, 24, 20, 16, 8, 4, 0]
+    """
+        
+    Value de rank pour la plupart a besoin de 13 valeurs différent : 4 bits
+    Value de rank pour getFullHouseValue a besoin de 8 bits (13 * 12)
+    Valeur de getFlushValue a besoin de 13*12*11*10*9 -> 20 bits
+    Valeur de getDoublePairValue a besoin de 8 bits
+
+    Dans l'ordre :
+    - 4 bits QuinteFlush
+    - 4 bits FourOfAKind
+    - 8 bits FullHouse
+    - 20 bits Flush
+    - 4 bits Straight
+    - 4 bits ThreeOfAKind
+    - 8 bits DoublePair
+    - 4 bits Pair
+    - 4 bits HighCard
+
+    -> 60 bits
+
+    """
     def getHighestValue(self, hand : Hand) :
         i = 0
         while i < len(Table.funcs) :
-            value = Table.funcs[i](hand)
-            if value > -1 :
-                return value + (len(Table.funcs)-i)*13
+            value = Table.funcs[i](self, hand)
+            if value[0] > -1 :
+                ret = 0
+                for j in range(len(value)) :
+                    ret += value[j] << (len(value)-1-j)*4
+                return ret << Table.shifts[i]
             i += 1
 
 class Card :
@@ -307,16 +349,67 @@ class Card :
     suits=['h', 'c', 's', 'd']
 
     def __init__(self, rank, suit) :
-        self.rank = Card.ranks.index(rank)
-        self.suit = Card.suits.index(suit)
+        if isinstance(rank, int) :
+            self.rank = rank
+        else :
+            self.rank = Card.ranks.index(rank)
+        if isinstance(suit, int) :
+            self.suit = suit
+        else :
+            self.suit = Card.suits.index(suit)
 
     def __str__ (self) :
-        return str(self.rank)+str(self.suit)
+        return self.ranks[self.rank]+self.suits[self.suit]
 
     def getRank(self) : 
         return self.rank
     
 if __name__ == "__main__" :
-    
-    
 
+    deck = [Card(i%13,i//13) for i in range(13*4)]
+    storage = {}
+    for sub in combinations(deck, 2) :
+        storage[str(Hand(sub))] = 0
+
+    def getSampleAndRemove(k, list) :
+        ans = []
+        for _ in range(k) :
+            card_index = rd.randint(0, len(list)-1)
+            ans.append(list[card_index])
+            del list[card_index]
+        return ans
+
+    nb_players = 2
+    
+    nb_try = 100000
+    nb_won = 0
+
+    #orig_hand = Hand([Card(0, 0), Card(1,1)])
+    #print(str(orig_hand[0]), str(orig_hand[1]))
+
+    for n in range(nb_try) :
+        #hands = [orig_hand]
+        hands = []
+        print(f"{int(n/nb_try*100*100)/100}%", end="\r")
+        #available = [Card(i%13,i//13) for i in range(13*4) if all(i%13 != hands[0][j].rank or i%4 != hands[0][j].suit for j in [0,1])]
+        available = [Card(i%13,i//13) for i in range(13*4)]
+
+        for i in range(nb_players) :
+            hands.append(Hand(getSampleAndRemove(2, available)))
+
+        table = Table(getSampleAndRemove(5, available))
+        values = [table.getHighestValue(hand) for hand in hands]
+
+        max_indexes, max_value = [0], values[0]
+        for i in range(len(values)) :
+            if values[i] > max_value :
+                max_indexes, max_value = [i], values[i]
+                break
+            elif values[i] == max_value :
+                max_indexes += [i]
+
+        for ind in max_indexes :
+            storage[str(hands[ind])] += 1/len(max_indexes)
+
+    #print(f"{int(nb_won/nb_try*100*100)/100}%")
+    print(storage)
