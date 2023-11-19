@@ -1,0 +1,8 @@
+######## TO_READ_MAXENCE ########
+
+Regarde ce que j'ai écris dans Cards, y'a peut-être moyen
+de faire un truc plus opti en utilisant que la longueur d'un 
+set est différente de la longueur de la liste équivalente si 
+y'a deux éléments identiques à l'intérieur. 
+
+######## END ########

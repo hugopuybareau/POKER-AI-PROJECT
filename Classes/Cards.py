@@ -12,15 +12,53 @@ class Table :
         return self._cards[item]
 
     def getPairValue(self, hand : Hand) :
-        for i in [0,1] :
+        if hand[0].rank == hand[1].rank :
+            return hand[0].rank
+        for i in [0, 1] :
             for j in range(len(self._cards)) :
                 if hand[i].rank == self[j].rank :
                     return (hand[i].rank)
         return -1
 
     def getDoublePairValue(self, hand : Hand) :
-        index1 = 
-        index2 = 
+        rank1 = -1
+        rank2 = -1
+        if hand[0].rank == hand[1].rank :
+            rank1 = hand[0].rank
+        for i in [0, 1]:
+            for j in range(len(self._cards)):
+                if hand[i].rank == self[j].rank : 
+                    rank2 = hand[i].rank
+                if rank1 == -1 : 
+                    rank1, rank2 = rank2, rank1
+        if rank1 < rank2 : 
+            rank1, rank2 = rank2, rank1 
+        return [rank1, rank2]
+    
+    def getThreeOfAKind(self, hand : Hand) :
+        if hand[0].rank == hand[1].rank : #pair in the hand
+            for j in range(len(self._cards)) : 
+                if hand[0].rank == self[j].rank : 
+                    return hand[0].rank
+        for i in [0, 1] : #pair on the table
+            for j in range(len(self._cards)) : 
+                for k in range(len(self._cards)) : 
+                    if hand[i].rank==self[j].rank==self[k].rank :
+                        return hand[0].rank
+        for i in range(len(self._cards)) : #Three of a kind on the table
+            for j in range(len(self._cards)) : 
+                for k in range(len(self._cards)) : 
+                    if self[i].rank==self[j].rank==self[k].rank :
+                        return self[i].rank 
+                    
+    def 
+
+        
+
+        
+
+        
+            
 
 class Hand : 
     def __init__(self, hand):
@@ -34,7 +72,7 @@ class Hand :
         
 class Card :
 
-    ranks=['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
+    ranks=[i for i in range(13)] #Plus simple pour comparer les cartes 
     suits=['h', 'c', 's', 'd']
 
     def __init__(self, rank, suit) : 
