@@ -7,9 +7,7 @@ class Player :
         self.username = username
         self.position = position
         self.prize_bb = prize_bb
-        self.all_in = 0
-        self.three_bet = 0
-        self.bet_bb = 0
+        self.diff_to_call = diff_to_call
         self.folded = False
 
     def updateBetBB(self, bet_bb : float) :

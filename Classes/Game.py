@@ -37,28 +37,54 @@ class Game :
     
 class Round :
 
-    stage = {0 : 'pre_flop_bet', 1 : 'flop_bet', 2 : 'turn_bet', 3 : 'river_bet'}
-    decisions = {0 : 'check_flop', 1 : 'check', 2 : 'call', 3 :'2_bet', 4 : '3_bet', 5 : 'all_in'}
-    positions =  {0: 'small_blind', 1 : 'big_blind', 2 : 'utg_0', 3 : 'utg_1', 4 : 'utg_2', 5 : 'utg_3', 6 : 'utg_4', 7 : 'utg_5'}
+    deals = ['pre_flop', 'flop', 'turn', 'river']
+    decisions = ['fold', 'check_fold', 'check', 'call', '2_bet', '3_bet', '2_raise', '3_raise' 'all_in']
+    positions = ['small_blind', 'big_blind', 'utg_0', 'utg_1', 'utg_2', 'utg_3']
 
-    def __init__(self, main_player : MainPlayer, players : list, hand : Hand, button : int, pot_bb : float, stage=0) :
+    def __init__(self, main_player : MainPlayer, players : list, hand : Hand, button = 'utg_3', pot_bb : float, to_call_bb : float stage=0) :
         self.pot_bb = pot_bb
         self.decision = []
-        self.cards = []
-        self.players = []
+        self.hand = hand
+        self.players = players
         self.decision_rate = decision_rates[len(players)]
+        self.to_call_bb = to_call_bb 
 
     def updateCards(self, cards : list) :
         self.cards = cards
 
     def updatePotBB(self, pot_bb : float) : 
         self.pot_bb = pot_bb
-    
-    def updateDecision(self, stage, decisions, table : Table, hand : Hand, pot_bb) : 
-        if stage == 0 : 
-            if self.main_player.position == 0 :
-                if pot_bb > 4 :
-                    self.decision.append(decisions[2])
+
+    def updateStage(self, stage) :
+        self.stage += 1
+
+    def updateDecision(self, table : Table, hand : Hand, pot_bb) : 
+        if self.stage == 0 : 
+            for key, values in stats_preflop.items() : 
+                if values[len(players)-2]/100 > decision_rate : 
+                    playable_hands.append(key) 
+                    for i in playable_hands : 
+                        if str(hand) == i : 
+
+                            if (self.main_player.position != positions[2]) : #SB or BB or #UNDER THE GUN+1/+2/+3/+4 Je mets la même pour l'instant mais en sah c'est pas vraiment pareil faut que je refasse des recherches je me souviens plus 
+                                if (pot_bb > 4) and (diff_to_call < 3): #POT ALREADY CALLED/SMALL RAISED, 2RAISE CONTROL
+                                    self.decision.append(decisions[6])
+                                if (pot_bb > 4) and (diff_to_call < 6): #POT ALREADY RAISED, WE CALL
+                                    self.decision.append(decisions[3])
+                                if diff_to_call > 10 : #RECREATIONAL PLAYER WE FOLD 
+                                    self.decision.append(decision[0])
+                                if 1.5 < pot_bb < 4 : #POT ONLY CALLED, WE TAKE CONTROL / STEAL THE BLINDS W 3RAISE
+                                    self.decision.append(decisions[7])
+
+                            if self.main_player.position == positions[2] : #UNDER THE GUN, WE TAKE CONTROL
+                                self.decision.append(decisions[5])
+
+                        else : 
+                            if (self.main_player.position == positions[1]) and (self.main_player.diff_to_call == 0): 
+                                self.decision.append(decisions[2])
+        if self.stage == 1 : 
+
+            
 
 
 
