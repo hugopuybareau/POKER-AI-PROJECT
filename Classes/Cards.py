@@ -1,5 +1,6 @@
 from itertools import combinations
 import random as rd
+import time
 
 preflop_stats = {
     "A-A":[85.3,73.4,63.9,55.9,49.2,43.6,38.8,34.7,31.1],
@@ -370,9 +371,12 @@ class Card :
         return self.rank
     
 if __name__ == "__main__" :
+    from utils import saveDictToFile, loadDictFromFile
+
+    data_path = "D:/Poker Project/Project/Data/pre-flop.json"
 
     deck = [Card(i%13,i//13) for i in range(13*4)]
-    storage = {}
+    storage = loadDictFromFile(data_path)
     for sub in combinations(deck, 2) :
         storage[str(Hand(sub))] = 0
 
@@ -387,11 +391,12 @@ if __name__ == "__main__" :
     nb_players = 2
     
     nb_try = 100000
-    nb_won = 0
 
     #orig_hand = Hand([Card(0, 0), Card(1,1)])
     #print(str(orig_hand[0]), str(orig_hand[1]))
 
+    
+    current_time = time.time()
     for n in range(nb_try) :
         #hands = [orig_hand]
         hands = []
@@ -416,7 +421,8 @@ if __name__ == "__main__" :
         for ind in max_indexes :
             storage[str(hands[ind])] += 1/len(max_indexes)
 
+    print(f"Elapsed Time : {int((time.time() - current_time)*100)/100}s")
     #print(f"{int(nb_won/nb_try*100*100)/100}%")
-    #print(storage)
-    print(['pipi']*5)
-
+    storage["nb_try"] += nb_try
+    print(storage)
+    saveDictToFile(storage, data_path)
