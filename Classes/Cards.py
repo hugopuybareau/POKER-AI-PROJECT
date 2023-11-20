@@ -198,6 +198,33 @@ class Hand :
             self._cards = [self._cards[1], self._cards[0]]
         elif self._cards[1].rank == self._cards[0].rank and self._cards[1].suit > self._cards[0].suit :
             self._cards = [self._cards[1], self._cards[0]]
+
+    """
+        Input : ("9-7")
+        Output : ["9h-7s", ...]
+    """
+
+    def generateAllKeysFromRanks(hand : str, suited = None) :
+        arr = hand.split("-")
+        rank1, rank2 = arr[0], arr[1]
+        if Card.getIndexFromRank(rank1) < Card.getIndexFromRank(rank2) :
+            rank1,rank2 = rank2,rank1
+
+        keys = []
+        if suited is None :
+            if rank1==rank2 :
+                for i in range(len(Card.suits)) :
+                    for j in range(i+1, len(Card.suits)) :
+                        keys.append(rank1+Card.suits[i]+"-"+rank2+Card.suits[j])
+            else :
+                for i in range(len(Card.suits)) :
+                    for j in range(len(Card.suits)) :
+                        keys.append(rank1+Card.suits[i]+"-"+rank2+Card.suits[j])
+        elif suited :
+            if rank1==rank2 :
+                for i in range(len(Card.suits)) :
+                    for j in range(i+1, len(Card.suits)) :
+                        keys.append(rank1+Card.suits[i]+"-"+rank2+Card.suits[j])
     
 class Table :
     def __init__(self, cards = None) :
@@ -370,6 +397,9 @@ class Card :
     def getRank(self) : 
         return self.rank
     
+    def getIndexFromRank(rank : str) :
+        return Card.ranks.index(rank)
+    
 if __name__ == "__main__" :
     from utils import saveDictToFile, loadDictFromFile
 
@@ -393,7 +423,7 @@ if __name__ == "__main__" :
 
     nb_players = 2
     
-    nb_try = 600000
+    nb_try = 6000
 
     #orig_hand = Hand([Card(0, 0), Card(1,1)])
     #print(str(orig_hand[0]), str(orig_hand[1]))
@@ -427,5 +457,6 @@ if __name__ == "__main__" :
     print(f"Elapsed Time : {int((time.time() - current_time)*100)/100}s")
     #print(f"{int(nb_won/nb_try*100*100)/100}%")
     storage["nb_try"] += nb_try
+    storage["nb_players"] = nb_players
     print(storage)
     saveDictToFile(storage, data_path)
