@@ -41,12 +41,7 @@ class Round :
     decisions = ['fold', 'check_fold', 'check', 'call', '2_bet', '3_bet', '2_raise', '3_raise' 'all_in']
     positions = ['small_blind', 'big_blind', 'utg_0', 'utg_1', 'utg_2', 'utg_3']
 
-<<<<<<< Updated upstream
     def __init__(self, main_player : MainPlayer, players : list, hand : Hand, button = 'utg_3', pot_bb : float, to_call_bb : float stage=0) :
-=======
-    def __init__(self, main_player : MainPlayer, players : list, hand : Hand, button : int, pot_bb : float, stage=0) :
-        self.button = button
->>>>>>> Stashed changes
         self.pot_bb = pot_bb
         self.decision = []
         self.hand = hand
