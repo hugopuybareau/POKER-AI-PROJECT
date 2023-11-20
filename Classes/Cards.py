@@ -189,12 +189,12 @@ class Hand :
         return self._cards[item]
     
     def __str__(self) :
-        if self._cards[0].suit == self._cards[1].suit :
-            return str(self._cards[0])+"-"+str(self._cards[1])+'s'
+        """if self._cards[0].suit == self._cards[1].suit :
+            return str(self._cards[0])+"-"+str(self._cards[1])+'s'"""
         return str(self._cards[0])+"-"+str(self._cards[1])
 
     def sortByRank(self) : 
-        if self._cards[1].suit > self._cards[0].suit :
+        if self._cards[1].rank > self._cards[0].rank :
             self._cards = [self._cards[1], self._cards[0]]
         elif self._cards[1].rank == self._cards[0].rank and self._cards[1].suit > self._cards[0].suit :
             self._cards = [self._cards[1], self._cards[0]]
@@ -378,7 +378,10 @@ if __name__ == "__main__" :
     deck = [Card(i%13,i//13) for i in range(13*4)]
     storage = loadDictFromFile(data_path)
     for sub in combinations(deck, 2) :
-        storage[str(Hand(sub))] = 0
+        if not str(Hand(sub)) in storage :
+            storage[str(Hand(sub))] = 0
+    if not "nb_try" in storage :
+        storage['nb_try'] = 0
 
     def getSampleAndRemove(k, list) :
         ans = []
@@ -390,7 +393,7 @@ if __name__ == "__main__" :
 
     nb_players = 2
     
-    nb_try = 100000
+    nb_try = 600000
 
     #orig_hand = Hand([Card(0, 0), Card(1,1)])
     #print(str(orig_hand[0]), str(orig_hand[1]))
