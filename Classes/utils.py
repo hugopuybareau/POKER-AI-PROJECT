@@ -25,5 +25,5 @@ def computeProba(keys, dictionnary) :
     sum = 0
     for key in keys :
         sum += dictionnary[key]
-    
-    return 2*sum/dictionnary["nb_try"]/dictionnary["nb_player"]*1326/len(keys)/(len(keys)-1)
+
+    return sum/dictionnary["nb_try"]/dictionnary["nb_players"]*1326/len(keys)

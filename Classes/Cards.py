@@ -213,18 +213,29 @@ class Hand :
         keys = []
         if suited is None :
             if rank1==rank2 :
-                for i in range(len(Card.suits)) :
-                    for j in range(i+1, len(Card.suits)) :
+                for j in range(len(Card.suits)) :
+                    for i in range(j+1, len(Card.suits)) :
                         keys.append(rank1+Card.suits[i]+"-"+rank2+Card.suits[j])
             else :
-                for i in range(len(Card.suits)) :
-                    for j in range(len(Card.suits)) :
+                for j in range(len(Card.suits)) :
+                    for i in range(len(Card.suits)) :
                         keys.append(rank1+Card.suits[i]+"-"+rank2+Card.suits[j])
         elif suited :
             if rank1==rank2 :
-                for i in range(len(Card.suits)) :
-                    for j in range(i+1, len(Card.suits)) :
-                        keys.append(rank1+Card.suits[i]+"-"+rank2+Card.suits[j])
+                for suit1, suit2 in [("d","h"),("s", "c")] :
+                    keys.append(rank1+suit1+"-"+rank2+suit2)
+            else :
+                for suit1, suit2 in [("d","h"),("s", "c"),("d","d"),("c", "c"),("h","h"),("s", "s")] :
+                    keys.append(rank1+suit1+"-"+rank2+suit2)
+            suits=['h', 'c', 's', 'd']
+        else :
+            if rank1==rank2 :
+                for suit1, suit2 in [("s","h"),("c","h"),("d","c"),("d","s")] :
+                    keys.append(rank1+suit1+"-"+rank2+suit2)
+            else :
+                for suit1, suit2 in [("h","s"),("h","c"),("c","d"),("s","d"),("h","h"),("c","c"),("d","d"),("s","s")] :
+                    keys.append(rank1+suit2+"-"+rank2+suit1)
+        return keys
     
 class Table :
     def __init__(self, cards = None) :
@@ -244,16 +255,20 @@ class Table :
 
     def __getitem__(self, item):
         return self._cards[item]
-    
+
+
     def getQuinteFlushValue(self, hand : Hand) :
         cards = self + hand
         rank = -1
-        for subs in combinations(cards, 5) :
-            suits = set(card.suit for card in subs)
+        ranks_sorted = sorted(card.rank for card in cards)
+        for j in range(4) :
+            sub_ranks = ranks_sorted[j:j+5]
+            suits = set(card.suit for card in sub_ranks)
             if len(suits) == 1:
-                ranks = sorted(card.rank for card in subs)
-                if all(ranks[i] == ranks[i-1] + 1 for i in range(1, len(ranks))) :
-                    rank = max(rank, ranks[-1])
+                if all(sub_ranks[i] == sub_ranks[i-1] + 1 for i in range(1, len(sub_ranks))) :
+                    rank = max(rank, sub_ranks[0])
+            elif sub_ranks == [0,1,2,3,13] :
+                rank = max(rank, 0)
         return [rank]
     
     def getFourOfAKindValue(self, hand : Hand) :
@@ -297,10 +312,12 @@ class Table :
         cards = self + hand
         rank = -1
         ranks_sorted = sorted(card.rank for card in cards)
-        for i in range(4) :
-            sub_ranks = ranks_sorted[i:i+5]
+        for j in range(4) :
+            sub_ranks = ranks_sorted[j:j+5]
             if all(sub_ranks[i] == sub_ranks[i-1] + 1 for i in range(1, len(sub_ranks))) :
-                rank = max(rank, sub_ranks[-1])
+                rank = max(rank, sub_ranks[0]+1)
+            elif sub_ranks == [0,1,2,3,13] :
+                rank = max(rank, 0)
         return [rank]
     
     def getThreeOfAKindValue(self, hand : Hand) :
@@ -381,15 +398,12 @@ class Card :
     ranks=['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'] 
     suits=['h', 'c', 's', 'd']
 
+    def initFromStr(rank, suit) :
+        return Card(Card.ranks.index(rank),Card.suits.index(suit))
+
     def __init__(self, rank, suit) :
-        if isinstance(rank, int) :
-            self.rank = rank
-        else :
-            self.rank = Card.ranks.index(rank)
-        if isinstance(suit, int) :
-            self.suit = suit
-        else :
-            self.suit = Card.suits.index(suit)
+        self.rank = rank
+        self.suit = suit
 
     def __str__ (self) :
         return self.ranks[self.rank]+self.suits[self.suit]
@@ -403,7 +417,9 @@ class Card :
 if __name__ == "__main__" :
     from utils import saveDictToFile, loadDictFromFile
 
-    data_path = "D:/Poker Project/Project/Data/pre-flop.json"
+    nb_players = 3
+    nb_try = 100000
+    data_path = f"D:/Poker Project/Project/Data/pre-flop_{nb_players}.json"
 
     deck = [Card(i%13,i//13) for i in range(13*4)]
     storage = loadDictFromFile(data_path)
@@ -421,13 +437,8 @@ if __name__ == "__main__" :
             del list[card_index]
         return ans
 
-    nb_players = 2
-    
-    nb_try = 6000
-
     #orig_hand = Hand([Card(0, 0), Card(1,1)])
     #print(str(orig_hand[0]), str(orig_hand[1]))
-
     
     current_time = time.time()
     for n in range(nb_try) :
@@ -455,7 +466,6 @@ if __name__ == "__main__" :
             storage[str(hands[ind])] += 1/len(max_indexes)
 
     print(f"Elapsed Time : {int((time.time() - current_time)*100)/100}s")
-    #print(f"{int(nb_won/nb_try*100*100)/100}%")
     storage["nb_try"] += nb_try
     storage["nb_players"] = nb_players
     print(storage)
