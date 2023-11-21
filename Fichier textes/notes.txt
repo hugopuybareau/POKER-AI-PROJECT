@@ -1,0 +1,37 @@
+######## NOTES ########
+
+
+PREFLOP STRATEGY 
+    - Practice exploit with good hands : 
+        1) (1v1 situation from SB)
+        flat call on a small raise and 20/30xMORE raise
+        on a re-raise to make the guy fold
+
+        2) jam 14/20xMORE with big hands (top pairs or aks, aqs)
+        and small prize. Micro-stakes players love to gamble
+
+    - Don't call from SB/BB if not in top15%
+
+    - if IP against OOP opening, fold and 3-raise only
+    if the guy is betting on everything
+
+    - if OOP and under 20BBprize against an IP opening
+    go ALL IN // if IP against nothing with good hand, go
+    go BIGRAISE, the SB or BB could be us, we want to scare them
+
+FLOP STRATEGY 
+    - Check raise if flush draw (1v1 situation)
+    - limpers dont bluff : we OOP with bad FLOP,
+    we get IP raised by a limper, we FOLD
+    - when people flop pairs, they can't fold. so BET BIG
+    if better 
+    - What should i ask my self before a big CALL : 
+        How likely is raising with the best value hand ?
+    - When the passive players start bombing the pot, FOLD
+
+TURN STRATEGY 
+    - Micro stake player do not fold ! Don't bluff late.
+        They want to close the loop.
+
+
+######## END ########
