@@ -27,3 +27,21 @@ def computeProba(keys, dictionnary) :
         sum += dictionnary[key]
 
     return sum/dictionnary["nb_try"]/dictionnary["nb_players"]*1326/len(keys)
+
+def longestSequenceAndIndex(arr) :
+    current_length, max_length, last_index = 0, 0, 0
+    for i in range(len(arr)):
+        num = arr[i]
+        if num != 0:
+            current_length += 1
+        else:
+            max_length = max(max_length, current_length)
+            current_length = 0
+            last_index = i-1
+
+    # Update max_length if there's a non-zero sequence at the end
+    if current_length >= max_length :
+        max_length = current_length
+        last_index = len(arr)-1
+
+    return max_length, last_index
