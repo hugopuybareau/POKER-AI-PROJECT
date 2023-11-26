@@ -2,6 +2,7 @@ from itertools import combinations
 import random as rd
 import time
 from utils import *
+from combinations_utils import *
 
 preflop_stats = {
     "A-A":[85.3,73.4,63.9,55.9,49.2,43.6,38.8,34.7,31.1],
@@ -261,15 +262,15 @@ class Table :
     def getQuinteFlushValue(self, hand : Hand) :
         cards = self + hand
         rank = -1
-        ranks_sorted = sorted(card.rank for card in cards)
+        cards_sorted = sorted(cards, key=lambda card: card.rank)
         for j in range(4) :
-            sub_ranks = ranks_sorted[j:j+5]
-            suits = set(card.suit for card in sub_ranks)
+            sub_cards = cards_sorted[j:j+5]
+            suits = set(card.suit for card in sub_cards)
             if len(suits) == 1:
-                if all(sub_ranks[i] == sub_ranks[i-1] + 1 for i in range(1, len(sub_ranks))) :
-                    rank = max(rank, sub_ranks[0])
-            elif sub_ranks == [0,1,2,3,13] :
-                rank = max(rank, 0)
+                if all(sub_cards[i].rank == sub_cards[i-1].rank + 1 for i in range(1, len(sub_cards))) :
+                    rank = max(rank, sub_cards[0].rank)
+                elif [card.rank for card in sub_cards] == [0,1,2,3,13] :
+                    rank = max(rank, 0)
         return [rank]
     
     def getFourOfAKindValue(self, hand : Hand) :
@@ -370,15 +371,15 @@ class Table :
     Valeur de getDoublePairValue a besoin de 8 bits
 
     Dans l'ordre :
-    - 4 bits QuinteFlush
-    - 4 bits FourOfAKind
-    - 8 bits FullHouse
-    - 20 bits Flush
-    - 4 bits Straight
-    - 4 bits ThreeOfAKind
-    - 8 bits DoublePair
-    - 4 bits Pair
-    - 4 bits HighCard
+    - 4 bits QuinteFlush : 56
+    - 4 bits FourOfAKind : 52
+    - 8 bits FullHouse : 44
+    - 20 bits Flush : 24
+    - 4 bits Straight : 20
+    - 4 bits ThreeOfAKind : 16
+    - 8 bits DoublePair : 8
+    - 4 bits Pair : 4
+    - 4 bits HighCard : 0
 
     -> 60 bits
 
@@ -395,200 +396,79 @@ class Table :
             i += 1
     
     def new_getHighestValue(self, hand :Hand) :
+
         cards = self + hand
-        r_counts = [0 for i in range(len(Card.ranks))]
-        for c in cards :
-            r_counts[c.rank] += 1
-
-        flush = any(sum(counts[i]) >= 5 for i in range(len(counts)))
-        """if flush :
-            #Ici on a flush ou mieux
-            f_house_may = any(r_counts[i] >= 3 for i in range(len(r_counts)))
-            if f_house_may :
-                #Possiblement full house ou four of a kind
-                four_of_a_kind = any(r_counts[i] == 4 for i in range(len(r_counts)))
-                if four_of_a_kind :
-                    #four of a kind, donc impossible de straight
-                    pass
-                else :
-                    #quinte flush ou f_house
-                    arr = [r_counts[i] for i in range(len(r_counts)) if r_counts[i] >= 2]
-                    f_house = (len(arr) >= 2 and max(arr) == 3)
-                    if f_house :
-                        #Full house forcément
-                        pass
-                    else :
-                        #Quinte flush ou flush tout court
-                        counts = [[0 for i in range(len(Card.ranks))] for j in range(len(Card.suits))]
-                        for c in cards :
-                            counts[c.suits][c.rank] += 1
-                        for count in counts :
-                            if sum(count) >= 5 :
-                                max_length, last_index = longestSequenceAndIndex([count[-1]]+count)
-                                if max_length >= 5 :
-                                    return #Valeur pour QuinteFlush
-                        
-                        for count in counts :
-                            if sum(count) >= 5 :
-                                s, nb = 0, 0
-                                index = len(count)-1
-                                while index >= 0 and nb < 5 :
-                                    if count[index] > 0 :
-                                        nb += 1
-                                    s += 2**index
-                                    index -= 1
-                                return #Valeur pour flush       
-            else :
-                #Quinte flush ou flush tout court
-                counts = [[0 for i in range(len(Card.ranks))] for j in range(len(Card.suits))]
-                for c in cards :
-                    counts[c.suits][c.rank] += 1
-                for count in counts :
-                    if sum(count) >= 5 :
-                        max_length, last_index = longestSequenceAndIndex([count[-1]]+count)
-                        if max_length >= 5 :
-                            return #Valeur pour QuinteFlush
-                
-                for count in counts :
-                    if sum(count) >= 5 :
-                        s, nb = 0, 0
-                        index = len(count)-1
-                        while index >= 0 and nb < 5 :
-                            if count[index] > 0 :
-                                nb += 1
-                            s += 2**index
-                            index -= 1
-                        return #Valeur pour flush
-        else :
-            #Ici on a pas flush donc on a three of a kind ou 4 of a kind ou full house ou moins
-            f_house_may = any(r_counts[i] >= 3 for i in range(len(r_counts)))
-            if f_house_may :
-                #Possiblement full house ou four of a kind
-                four_of_a_kind = any(r_counts[i] == 4 for i in range(len(r_counts)))
-                if four_of_a_kind :
-                    #four of a kind, donc impossible de straight
-                    pass
-                else :
-                    #f_house ou three of a kind
-                    arr = [r_counts[i] for i in range(len(r_counts)) if r_counts[i] >= 2]
-                    f_house = (len(arr) >= 2 and max(arr) == 3)
-                    if f_house :
-                        #Full house forcément
-                        pass
-                    else :
-                        #three of a kind ou straight
-                        max_length, last_index = longestSequenceAndIndex([r_counts[-1]]+r_counts)
-                        if max_length >= 5 :
-                            return #Valeur pour straight 
-                        else :
-                            #three of a kind
-                            return #Valeur three of a kind
-            else :
-                #Straight ou double pair, pair ou carte plus haute
-                max_length, last_index = longestSequenceAndIndex([r_counts[-1]]+r_counts)
-                if max_length >= 5 :
-                    return #Valeur pour straight
-                        
-                arr = [i for i in range(len(r_counts)) if r_counts[i] >= 2]
-                if len(arr) >= 2 :
-                    #Double paire
-                    return #Valeur double pair
-                elif len(arr) == 1 :
-                    #Paire
-                    return #Valeur paire
-                else :
-                    for i in range(len(arr) - 1, -1, -1):
-                        if arr[i] != 0:
-                            return i"""
-
-        f_house_may = any(r_counts[i] >= 3 for i in range(len(r_counts)))
-        if f_house_may :
+        r_counts, s_counts = countRankAndSuits(cards, Card.ranks, Card.suits)
+        if hasThreeOfAKindOrMore(r_counts, s_counts) :
             #Possiblement full house ou four of a kind ou three of a kind ou quinte flush ou flush
-            four_of_a_kind = any(r_counts[i] == 4 for i in range(len(r_counts)))
-            if four_of_a_kind :
+            if hasFourOfAKind(r_counts, s_counts) :
                 #four of a kind, donc impossible de straight
-                pass
-            elif flush :
-                #quinte flush ou f_house
-                arr = [r_counts[i] for i in range(len(r_counts)) if r_counts[i] >= 2]
-                f_house = (len(arr) >= 2 and max(arr) == 3)
-                if f_house :
+                #print("a")
+                return fourOfAKindValue(r_counts, s_counts) << 52
+            elif hasFlush(r_counts, s_counts) :
+                #quinte flush ou f_house ou flush tt court
+                if hasFullHouse(r_counts, s_counts) :
                     #Full house forcément
-                    pass
+                    #print("b")
+                    return fullHouseValue(r_counts, s_counts) << 44
                 else :
                     #Quinte flush ou flush tout court
-                    counts = [[0 for i in range(len(Card.ranks))] for j in range(len(Card.suits))]
-                    for c in cards :
-                        counts[c.suits][c.rank] += 1
-                    for count in counts :
-                        if sum(count) >= 5 :
-                            max_length, last_index = longestSequenceAndIndex([count[-1]]+count)
-                            if max_length >= 5 :
-                                return #Valeur pour QuinteFlush
+                    f_counts = countForFlush(cards, Card.ranks, Card.suits)
+                    quinte_flush_v = quinteFlushValue(f_counts)
+                    if quinte_flush_v is not None :
+                        #print("c")
+                        return quinte_flush_v << 56
                     
-                    for count in counts :
-                        if sum(count) >= 5 :
-                            s, nb = 0, 0
-                            index = len(count)-1
-                            while index >= 0 and nb < 5 :
-                                if count[index] > 0 :
-                                    nb += 1
-                                s += 2**index
-                                index -= 1
-                            return #Valeur pour flush
+                    #print("d")
+                    return flushValue(f_counts) << 24 #On a dj vérifié qu'il y avait une flush donc pas besoin de reverif
             else :
                 #f_house ou three of a kind ou straight
-                arr = [r_counts[i] for i in range(len(r_counts)) if r_counts[i] >= 2]
-                f_house = (len(arr) >= 2 and max(arr) == 3)
+                f_house = hasFullHouse(r_counts, s_counts)
                 if f_house :
                     #Full house forcément
-                    pass
+                    #print("e")
+                    return fullHouseValue(r_counts, s_counts) << 44
                 else :
                     #three of a kind ou straight
                     max_length, last_index = longestSequenceAndIndex([r_counts[-1]]+r_counts)
                     if max_length >= 5 :
-                        return #Valeur pour straight 
+                        #print("f")
+                        return last_index << 20 #Valeur pour straight 
                     else :
                         #three of a kind
-                        return #Valeur three of a kind
+                        #print("g")
+                        return threeOfAKindValue(r_counts, s_counts) << 16
         else :
-            if flush :
+            if hasFlush(r_counts, s_counts) :
                 #Quinte flush ou flush tout court
-                counts = [[0 for i in range(len(Card.ranks))] for j in range(len(Card.suits))]
-                for c in cards :
-                    counts[c.suits][c.rank] += 1
-                for count in counts :
-                    if sum(count) >= 5 :
-                        max_length, last_index = longestSequenceAndIndex([count[-1]]+count)
-                        if max_length >= 5 :
-                            return #Valeur pour QuinteFlush
+                f_counts = countForFlush(cards, Card.ranks, Card.suits)
+                quinte_flush_v = quinteFlushValue(f_counts)
+                if quinte_flush_v is not None :
+                    #print("h")
+                    return quinte_flush_v << 56
                 
-                for count in counts :
-                    if sum(count) >= 5 :
-                        s, nb = 0, 0
-                        index = len(count)-1
-                        while index >= 0 and nb < 5 :
-                            if count[index] > 0 :
-                                nb += 1
-                            s += 2**index
-                            index -= 1
-                        return #Valeur pour flush
+                #print("i")
+                return flushValue(f_counts) << 24
             else :
                 #Straight ou double paire, paire ou carte plus haute
                 max_length, last_index = longestSequenceAndIndex([r_counts[-1]]+r_counts)
                 if max_length >= 5 :
-                    return #Valeur pour straight
+                    #print("j")
+                    return last_index << 20
                         
                 arr = [i for i in range(len(r_counts)) if r_counts[i] >= 2]
                 if len(arr) >= 2 :
                     #Double paire
-                    return #Valeur double pair
+                    #print("k")
+                    return doublePairValue(r_counts, s_counts) << 8
                 elif len(arr) == 1 :
                     #Paire
-                    return #Valeur paire
+                    #print("l")
+                    return arr[0] << 4
                 else :
-                    for i in range(len(arr) - 1, -1, -1):
-                        if arr[i] != 0:
+                    for i in range(len(r_counts) - 1, -1, -1):
+                        if r_counts[i] != 0:
+                            #print("m")
                             return i
 
 class Card :
@@ -616,7 +496,7 @@ if __name__ == "__main__" :
     from utils import saveDictToFile, loadDictFromFile
 
     nb_players = 3
-    nb_try = 100000
+    nb_try = 10000
     data_path = f"D:/Poker Project/Project/Data/pre-flop_{nb_players}.json"
 
     deck = [Card(i%13,i//13) for i in range(13*4)]
@@ -651,6 +531,9 @@ if __name__ == "__main__" :
 
         table = Table(getSampleAndRemove(5, available))
         values = [table.getHighestValue(hand) for hand in hands]
+        #values = [table.new_getHighestValue(hand) for hand in hands]
+
+        #print(sum([abs(values[i]-new_values[i]) for i in range(len(values))]))
 
         max_indexes, max_value = [0], values[0]
         for i in range(len(values)) :
