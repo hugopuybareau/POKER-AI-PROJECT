@@ -57,7 +57,7 @@ def fullHouseValue(r_counts, s_counts) :
             two = i
             second = False
         i -= 1
-    return three << 4 + two
+    return (three << 4) + two
 
 def threeOfAKindValue(r_counts, s_counts) :
     i = len(r_counts)-1
@@ -90,7 +90,7 @@ def doublePairValue(r_counts, s_counts) :
             two_2 = i
             second = False
         i -= 1
-    return two_1 << 4 + two_2
+    return (two_1 << 4) + two_2
 
 #Boolean utils
 def hasFlush(r_counts, s_counts) :

@@ -245,6 +245,7 @@ class Table :
             self._cards = [None] * 5
         else :
             self._cards = cards
+        self.sortByRank()
 
     def __add__(self, other) :
         return self._cards + other._cards
@@ -257,7 +258,12 @@ class Table :
 
     def __getitem__(self, item):
         return self._cards[item]
-
+    
+    def __str__(self) :
+        return "-".join(str(card) for card in self._cards)
+    
+    def sortByRank(self) :
+        self._cards = sorted(self._cards, key=lambda card: (card.rank, card.suit))
 
     def getQuinteFlushValue(self, hand : Hand) :
         cards = self + hand
@@ -356,6 +362,17 @@ class Table :
     def getHighCardValue(self, hand : Hand) :
         cards = self + hand
         return [sorted(card.rank for card in cards)[-1]]
+                        
+    def explicitValue(value) :
+        for i in range(len(Table.shifts)) :
+            v_shifted = value >> Table.shifts[i]
+            if v_shifted > 0 :
+                return f"{v_shifted} : {Table.display[i]}"
+
+    display = ["Quinte Flush", "Four Of A Kind",
+               "Full House", "Flush", "Straight",
+               "Three Of A Kind", "Double Pair",
+               "Pair", "High Card"]
     
     funcs = [getQuinteFlushValue, getFourOfAKindValue,
                      getFullHouseValue, getFlushValue, getStraightValue,
@@ -456,7 +473,7 @@ class Table :
                     #print("j")
                     return last_index << 20
                         
-                arr = [i for i in range(len(r_counts)) if r_counts[i] >= 2]
+                arr = [r_counts[i] for i in range(len(r_counts)) if r_counts[i] >= 2]
                 if len(arr) >= 2 :
                     #Double paire
                     #print("k")
@@ -495,17 +512,23 @@ class Card :
 if __name__ == "__main__" :
     from utils import saveDictToFile, loadDictFromFile
 
-    nb_players = 3
-    nb_try = 10000
-    data_path = f"D:/Poker Project/Project/Data/pre-flop_{nb_players}.json"
-
+    nb_players = 2
+    nb_try = 2000000
     deck = [Card(i%13,i//13) for i in range(13*4)]
-    storage = loadDictFromFile(data_path)
+
+    preflop_data_path = f"D:/Poker Project/Project/Data/pre-flop_{nb_players}.json"
+    storage_preflop = loadDictFromFile(preflop_data_path)
     for sub in combinations(deck, 2) :
-        if not str(Hand(sub)) in storage :
-            storage[str(Hand(sub))] = 0
-    if not "nb_try" in storage :
-        storage['nb_try'] = 0
+        name = str(Hand(sub))
+        if not name in storage_preflop :
+            storage_preflop[name] = 0
+
+    flop_data_path = f"D:/Poker Project/Project/Data/flop_{nb_players}.json"
+    storage_flop = loadDictFromFile(flop_data_path)
+    for sub in combinations(deck, 5) :
+        name = str(Table(sub))
+        if not name in storage_flop :
+            storage_flop[name] = 0
 
     def getSampleAndRemove(k, list) :
         ans = []
@@ -530,9 +553,13 @@ if __name__ == "__main__" :
             hands.append(Hand(getSampleAndRemove(2, available)))
 
         table = Table(getSampleAndRemove(5, available))
-        values = [table.getHighestValue(hand) for hand in hands]
-        #values = [table.new_getHighestValue(hand) for hand in hands]
+        #values = [table.getHighestValue(hand) for hand in hands]
+        #explicit = [Table.explicitValue(value) for value in values]
+        values = [table.new_getHighestValue(hand) for hand in hands]
+        #explicit = [Table.explicitValue(value) for value in values]
 
+        #print(explicit)
+        #print(f"Table : {table}, hands : {','.join(str(hand) for hand in hands)}")
         #print(sum([abs(values[i]-new_values[i]) for i in range(len(values))]))
 
         max_indexes, max_value = [0], values[0]
@@ -544,10 +571,19 @@ if __name__ == "__main__" :
                 max_indexes += [i]
 
         for ind in max_indexes :
-            storage[str(hands[ind])] += 1/len(max_indexes)
+            storage_flop[str(Table(hands[ind]._cards+table._cards[:3]))] += 1/len(max_indexes)
+            storage_preflop[str(hands[ind])] += 1/len(max_indexes)
 
     print(f"Elapsed Time : {int((time.time() - current_time)*100)/100}s")
-    storage["nb_try"] += nb_try
-    storage["nb_players"] = nb_players
-    print(storage)
-    saveDictToFile(storage, data_path)
+
+    if not "nb_try" in storage_preflop :
+        storage_preflop['nb_try'] = 0
+    storage_preflop["nb_try"] += nb_try
+    storage_preflop["nb_players"] = nb_players
+    if not "nb_try" in storage_flop :
+        storage_flop['nb_try'] = 0
+    storage_flop["nb_try"] += nb_try
+    storage_flop["nb_players"] = nb_players
+    #print(storage)
+    saveDictToFile(storage_preflop, preflop_data_path)
+    saveDictToFile(storage_flop, flop_data_path)
