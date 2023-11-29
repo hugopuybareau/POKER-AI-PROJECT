@@ -41,7 +41,7 @@ class Round :
     decisions = ['fold', 'check_fold', 'check', 'call', '2_bet', '3_bet', '2_raise', '3_raise' 'all_in']
     positions = ['small_blind', 'big_blind', 'utg_0', 'utg_1', 'utg_2', 'utg_3']
 
-    def __init__(self, main_player : MainPlayer, players : list, hand : Hand, button = 'utg_3', pot_bb : float, to_call_bb : float stage=0) :
+    def __init__(self, main_player : MainPlayer, players : list, hand : Hand, button = 'utg_3', pot_bb : float, to_call_bb : float, stage=0) :
         self.pot_bb = pot_bb
         self.decision = []
         self.hand = hand
@@ -60,8 +60,9 @@ class Round :
 
     def updateDecision(self, table : Table, hand : Hand, pot_bb) : 
         if self.stage == 0 : 
-            for key, values in stats_preflop.items() : 
-                if values[len(players)-2]/100 > decision_rate : 
+            playable_hands = []
+            for key, values in preflop_stats.items() : 
+                if values[len(self.players)-2]/100 > self.decision_rate : 
                     playable_hands.append(key) 
                     for i in playable_hands : 
                         if str(hand) == i : 
@@ -83,19 +84,3 @@ class Round :
                             if (self.main_player.position == positions[1]) and (self.main_player.diff_to_call == 0): 
                                 self.decision.append(decisions[2])
         if self.stage == 1 : 
-
-            
-
-
-
-
-
-    
-    
-            
-            
-                
-
-    
-
-    
