@@ -1,6 +1,10 @@
 from Players import Player, MainPlayer
 from Cards import *
 
+
+deals = ['pre_flop', 'flop', 'turn', 'river']
+decisions = ['fold', 'check_fold', 'check', 'call', '2_bet', '3_bet', '2_raise', '3_raise' 'all_in']
+positions = ['small_blind', 'big_blind', 'utg_0', 'utg_1', 'utg_2', 'utg_3']
 decision_rates = [0.5 , 0.5 , 0.5 , 0.2, 0.15, 0, 0] 
 
 class Game :
@@ -37,11 +41,7 @@ class Game :
     
 class Round :
 
-    deals = ['pre_flop', 'flop', 'turn', 'river']
-    decisions = ['fold', 'check_fold', 'check', 'call', '2_bet', '3_bet', '2_raise', '3_raise' 'all_in']
-    positions = ['small_blind', 'big_blind', 'utg_0', 'utg_1', 'utg_2', 'utg_3']
-
-    def __init__(self, main_player : MainPlayer, players : list, hand : Hand, button = 'utg_3', pot_bb : float, to_call_bb : float, stage=0) :
+    def __init__(self, main_player : MainPlayer, players : list, hand : Hand, pot_bb : float, to_call_bb : float, stage=0, button = 'utg_3') :
         self.pot_bb = pot_bb
         self.decision = []
         self.hand = hand
@@ -68,12 +68,12 @@ class Round :
                         if str(hand) == i : 
 
                             if (self.main_player.position != positions[2]) : #SB or BB or #UNDER THE GUN+1/+2/+3/+4 Je mets la même pour l'instant mais en sah c'est pas vraiment pareil faut que je refasse des recherches je me souviens plus 
-                                if (pot_bb > 4) and (diff_to_call < 3): #POT ALREADY CALLED/SMALL RAISED, 2RAISE CONTROL
+                                if (pot_bb > 4) and (self.main_player.diff_to_call < 3): #POT ALREADY CALLED/SMALL RAISED, 2RAISE CONTROL
                                     self.decision.append(decisions[6])
-                                if (pot_bb > 4) and (diff_to_call < 6): #POT ALREADY RAISED, WE CALL
+                                if (pot_bb > 4) and (self.main_player.diff_to_call < 6): #POT ALREADY RAISED, WE CALL
                                     self.decision.append(decisions[3])
-                                if diff_to_call > 10 : #RECREATIONAL PLAYER WE FOLD 
-                                    self.decision.append(decision[0])
+                                if self.main_player.diff_to_call > 10 : #RECREATIONAL PLAYER WE FOLD 
+                                    self.decision.append(decisions[0])
                                 if 1.5 < pot_bb < 4 : #POT ONLY CALLED, WE TAKE CONTROL / STEAL THE BLINDS W 3RAISE
                                     self.decision.append(decisions[7])
 
@@ -84,3 +84,5 @@ class Round :
                             if (self.main_player.position == positions[1]) and (self.main_player.diff_to_call == 0): 
                                 self.decision.append(decisions[2])
         if self.stage == 1 : 
+
+            

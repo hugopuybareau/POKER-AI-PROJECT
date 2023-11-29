@@ -3,7 +3,7 @@ from Game import Round
 
 class Player :
 
-    def __init__(self, username : str, position : int, prize_bb : float) :
+    def __init__(self, username : str, position : int, prize_bb : float, diff_to_call) :
         self.username = username
         self.position = position
         self.prize_bb = prize_bb
@@ -24,6 +24,6 @@ class Player :
 
 class MainPlayer(Player) :
 
-    def __init__(self, username : str, position : int, prize_bb : float) :
+    def __init__(self, username : str, position : int, prize_bb : float, hand : Hand) :
         Player.__init__(self, username, position, prize_bb)
         self.hand = hand
