@@ -14,13 +14,13 @@ class Round :
         self.diff_to_call = 0 
         self.bet = 0
         self.stage = 0
-        self.hand = Hand("Ah-4s")
+        self.hand = 'on verra plus tard'
         for p in players :
             p.position = ''
         self.redefinePlayerPositions(players, button_position)
 
     def redefinePlayerPositions(self, players, button_position) : 
-        button_index = players.index(button_position)
+        button_index = players.index(players.username == button_position)
         for p in range(len(players)) : 
             players[p].position = positions[p-button_index]
 

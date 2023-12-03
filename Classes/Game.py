@@ -27,10 +27,10 @@ class Game :
         
         self.players = players
 
-    def newRound(self, main_player : MainPlayer, players : list, button_position) :
-        Round(main_player, players, button_position)
+    def newRound(self, main_player : MainPlayer, players, button_position) :
+        round = Round(main_player, players, button_position)
 
-    def player_alone(self) :
+    def playerAlone(self) :
         count = 0
         for p in self.players :
             if p.isFolded() :
@@ -39,7 +39,11 @@ class Game :
         return count == len(self.players)
 
 if __name__ == "__main__" : 
-    game = Game(['op1', 'me', 'op2', 'op3', 'op4', 'op5'], [50] * 6)
+    game = Game(['op1', 'me', 'op2', 'op3', 'op4', 'op5'], [50] * 6, 'me')
+    print(game.button_position)
+    game.newRound(game.main_player, game.players, game.button_position)
+    for p in game.players : 
+        print(game.players.position)
 
 
             
