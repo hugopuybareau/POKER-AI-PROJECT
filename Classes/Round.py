@@ -7,10 +7,11 @@ positions = ['utg_0', 'utg_1', 'utg_2', 'utg_3', 'small_blind', 'big_blind']
 
 class Round :
 
-    def __init__(self, main_player : MainPlayer, players : list, button_position) :
+    def __init__(self, main_player : MainPlayer, players : list, players_name : list, button_position) :
         self.pot_bb = 1.5
         self.decision = []
         self.players = players
+        self.players_name = players_name
         self.diff_to_call = 0 
         self.bet = 0
         self.stage = 0
@@ -20,9 +21,7 @@ class Round :
         self.redefinePlayerPositions(players, button_position)
 
     def redefinePlayerPositions(self, players, button_position) : 
-        for p in players :
-            if p.username == button_position :
-                button_index = players.index(p)
+        button_index = self.players_name.index(button_position)
         for p in range(len(players)) : 
             players[p].position = positions[p-button_index]
 
