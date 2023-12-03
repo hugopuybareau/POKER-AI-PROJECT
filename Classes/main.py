@@ -19,7 +19,7 @@ if __name__ == "__main__" :
 
     deck = [Card(i%13,i//13) for i in range(52)]
 
-    """turnvalues = Proba.loadOrSetupBlank(f"D:/Poker Project/Project/Data/turnvalues", 133784560)#2598960)
+    """turnvalues = Proba.loadOrSetupBlank(f"D:/Poker Project/poker_project/Data/turnvalues", 133784560)#2598960)
     i = 0
     for sub in combinations(deck, 7) :
         if i % 20000 == 0 :
@@ -31,7 +31,7 @@ if __name__ == "__main__" :
     turnvalues.writeSegments()
     raise"""
 
-    """preflop_data_path = f"D:/Poker Project/Project/Data/pre-flop_{nb_players}.json"
+    """preflop_data_path = f"D:/Poker Project/poker_project/Data/pre-flop_{nb_players}.json"
     storage_preflop = loadDictFromFile(preflop_data_path)
     for sub in combinations(deck, 2) :
         name = str(Table(sub))
@@ -42,7 +42,7 @@ if __name__ == "__main__" :
 
     current_time = time.time()
     preflop_data_length = 1326
-    p_preflop = f"D:/Poker Project/Project/Data/pre-flop/{nb_players}"
+    p_preflop = f"D:/Poker Project/poker_project/Data/pre-flop/{nb_players}"
     proba_preflop = Proba.loadOrSetupBlank(p_preflop, data_length=preflop_data_length)
     print(f"Loaded pre-flop in {time.time()-current_time}s")
 
@@ -56,19 +56,19 @@ if __name__ == "__main__" :
 
     """current_time = time.time()
     flop_data_length = 2598960
-    p_flop = f"D:/Poker Project/Project/Data/flop/{nb_players}"
+    p_flop = f"D:/Poker Project/poker_project/Data/flop/{nb_players}"
     proba_flop = Proba.loadOrSetupBlank(p_flop, data_length=flop_data_length)
     print(f"Loaded flop in {time.time()-current_time}s")
 
     current_time = time.time()
     river_data_length = 20358520
-    p_river = f"D:/Poker Project/Project/Data/river/{nb_players}"
+    p_river = f"D:/Poker Project/poker_project/Data/river/{nb_players}"
     proba_river = Proba.loadOrSetupBlank(p_river, data_length=river_data_length)
     print(f"Loaded river in {time.time()-current_time}s")
 
     current_time = time.time()
     turn_data_length = 133784560
-    p_turn = f"D:/Poker Project/Project/Data/turn/{nb_players}"
+    p_turn = f"D:/Poker Project/poker_project/Data/turn/{nb_players}"
     proba_turn = Proba.loadOrSetupBlank(p_turn, data_length=turn_data_length)
     print(f"Loaded turn in {time.time()-current_time}s")"""
 
@@ -76,7 +76,7 @@ if __name__ == "__main__" :
     print(storage_preflop["2c-4h"][0]/storage_preflop["2c-4h"][1])"""
     
     """current_time = time.time()
-    flop_data_path = f"D:/Poker Project/Project/Data/flop_{nb_players}.json"
+    flop_data_path = f"D:/Poker Project/poker_project/Data/flop_{nb_players}.json"
     storage_flop = loadDictFromFile(flop_data_path)
     for sub in combinations(deck, 5) :
         name = str(Table(sub))
@@ -87,7 +87,7 @@ if __name__ == "__main__" :
     print(f"Loaded flop in {time.time()-current_time}s")
     
     current_time = time.time()
-    river_data_path = f"D:/Poker Project/Project/Data/river_{nb_players}.json"
+    river_data_path = f"D:/Poker Project/poker_project/Data/river_{nb_players}.json"
     storage_river = loadDictFromFile(river_data_path)
     for sub in combinations(deck, 6) :
         name = str(Table(sub))
@@ -144,7 +144,7 @@ if __name__ == "__main__" :
             #values = [table.v3_getHighestValue(hand, turnvalues) for hand in hands]
             values = [table.new_getHighestValue(hand) for hand in hands]
             
-            explicit = [Table.explicitValue(value) for value in values]
+            #explicit = [Table.explicitValue(value) for value in values]
 
             max_indexes, max_value = [0], values[0]
             for i in range(1, len(values)) :
@@ -165,17 +165,17 @@ if __name__ == "__main__" :
                 """storage_river[str(Table(hands[ind]._cards+table._cards[:4]))][0] += int(1000/len(max_indexes))/1000
                 storage_flop[str(Table(hands[ind]._cards+table._cards[:3]))][0] += int(1000/len(max_indexes))/1000"""
                 #storage_preflop[str(hands[ind])][0] += 1
-                if ids_preflop[ind] == 57 :
+                """if ids_preflop[ind] == 57 :
                     print(f"Table : {table}, hands : {','.join(str(hand) for hand in hands)}")
                     print(explicit)
-                    val[0] += 1
+                    val[0] += 1"""
                 proba_preflop.addValuesOneD(ids_preflop[ind], 1, 0)
                 """proba_flop.addValuesOneD(ids_flop[ind], 1, 0)
                 proba_river.addValuesOneD(ids_river[ind], 1, 0)
                 proba_turn.addValuesOneD(ids_turn[ind], 1, 0)"""
             for id in ids_preflop :
-                if id == 57 :
-                    val[1] += 1
+                """if id == 57 :
+                    val[1] += 1"""
                 proba_preflop.addValuesOneD(id, 0, 1)
             """for id in ids_flop :
                 proba_flop.addValuesOneD(id, 0, 1)

@@ -564,7 +564,7 @@ class Table :
                     #print("j")
                     return last_index << 20
                         
-                arr = [r_counts[i] for i in range(len(r_counts)) if r_counts[i] >= 2]
+                arr = [i for i in range(len(r_counts)) if r_counts[i] >= 2]
                 if len(arr) >= 2 :
                     #Double paire
                     #print("k")
