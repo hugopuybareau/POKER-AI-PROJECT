@@ -1,24 +1,23 @@
 
 #Function utils
 def countRankAndSuits(cards, ranks, suits) :
-    r_counts = [0 for i in range(len(ranks))]
-    s_counts = [0 for i in range(len(suits))]
+    r_counts = [0] * 13
+    s_counts = [0] * 4
     for c in cards :
         r_counts[c.rank] += 1
         s_counts[c.suit] += 1
     return r_counts, s_counts
 
 def countForFlush(cards, ranks, suits) :
-    counts = [[0 for i in range(len(ranks))] for j in range(len(suits))]
+    counts = [[0]*len(ranks)]*len(suits)
     for c in cards :
-        counts[c.suit][c.rank] += 1
+        counts[c.suit][c.rank] = 1
     return counts
 
 def longestSequenceAndIndex(arr) :
     current_length, max_length, last_index = 0, 0, 0
     for i in range(len(arr)):
-        num = arr[i]
-        if num != 0:
+        if arr[i] != 0:
             current_length += 1
         else:
             max_length = max(max_length, current_length)

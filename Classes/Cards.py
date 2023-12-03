@@ -195,10 +195,10 @@ class Hand :
             return str(self._cards[0])+"-"+str(self._cards[1])+'s'"""
         return str(self._cards[0])+"-"+str(self._cards[1])
 
-    def sortByRank(self) : 
-        if self._cards[1].rank > self._cards[0].rank :
+    def sortByRank(self) :
+        if self._cards[0].rank > self._cards[1].rank :
             self._cards = [self._cards[1], self._cards[0]]
-        elif self._cards[1].rank == self._cards[0].rank and self._cards[1].suit > self._cards[0].suit :
+        elif self._cards[1].rank == self._cards[0].rank and self._cards[0].suit > self._cards[1].suit :
             self._cards = [self._cards[1], self._cards[0]]
 
     """
@@ -239,13 +239,22 @@ class Hand :
                     keys.append(rank1+suit2+"-"+rank2+suit1)
         return keys
     
+    def strArr(self) :
+        return [str(self._cards[0]), str(self._cards[1])]
+    
 class Table :
-    def __init__(self, cards = None) :
-        if cards is None :
-            self._cards = [None] * 5
-        else :
-            self._cards = cards
+
+    def __init__(self, cards) :
+        self._cards = cards
         self.sortByRank()
+
+    def initFromKey(cards_str) :
+        arr = cards_str.strip().split("-")
+        return Table([Card.initFromStr(c_str) for c_str in arr])
+
+    def initFromStr(cards_str) :
+        arr = cards_str.strip().split(" ")
+        return Table([Card.initFromStr(c_str) for c_str in arr])
 
     def __add__(self, other) :
         return self._cards + other._cards
@@ -260,7 +269,13 @@ class Table :
         return self._cards[item]
     
     def __str__(self) :
-        return "-".join(str(card) for card in self._cards)
+        ans = str(self._cards[0])
+        for i in range(1, len(self._cards)) :
+            ans += "-" + str(self._cards[i])
+        return ans
+    
+    def setupStr(self) :
+        self.string = [str(card) for card in self._cards]
     
     def sortByRank(self) :
         self._cards = sorted(self._cards, key=lambda card: (card.rank, card.suit))
@@ -412,9 +427,7 @@ class Table :
                 return ret << Table.shifts[i]
             i += 1
     
-    def new_getHighestValue(self, hand :Hand) :
-
-        cards = self + hand
+    def highestValue(cards) :
         r_counts, s_counts = countRankAndSuits(cards, Card.ranks, Card.suits)
         if hasThreeOfAKindOrMore(r_counts, s_counts) :
             #Possiblement full house ou four of a kind ou three of a kind ou quinte flush ou flush
@@ -488,17 +501,122 @@ class Table :
                             #print("m")
                             return i
 
+    def new_getHighestValue(self, hand :Hand = None) :
+        if hand is None :
+            cards = self
+        else :
+            cards = self + hand
+        r_counts, s_counts = countRankAndSuits(cards, Card.ranks, Card.suits)
+        if hasThreeOfAKindOrMore(r_counts, s_counts) :
+            #Possiblement full house ou four of a kind ou three of a kind ou quinte flush ou flush
+            if hasFourOfAKind(r_counts, s_counts) :
+                #four of a kind, donc impossible de straight
+                #print("a")
+                return fourOfAKindValue(r_counts, s_counts) << 52
+            elif hasFlush(r_counts, s_counts) :
+                #quinte flush ou f_house ou flush tt court
+                if hasFullHouse(r_counts, s_counts) :
+                    #Full house forcément
+                    #print("b")
+                    return fullHouseValue(r_counts, s_counts) << 44
+                else :
+                    #Quinte flush ou flush tout court
+                    f_counts = countForFlush(cards, Card.ranks, Card.suits)
+                    quinte_flush_v = quinteFlushValue(f_counts)
+                    if quinte_flush_v is not None :
+                        #print("c")
+                        return quinte_flush_v << 56
+                    
+                    #print("d")
+                    return flushValue(f_counts) << 24 #On a dj vérifié qu'il y avait une flush donc pas besoin de reverif
+            else :
+                #f_house ou three of a kind ou straight
+                f_house = hasFullHouse(r_counts, s_counts)
+                if f_house :
+                    #Full house forcément
+                    #print("e")
+                    return fullHouseValue(r_counts, s_counts) << 44
+                else :
+                    #three of a kind ou straight
+                    max_length, last_index = longestSequenceAndIndex([r_counts[-1]]+r_counts)
+                    if max_length >= 5 :
+                        #print("f")
+                        return last_index << 20 #Valeur pour straight 
+                    else :
+                        #three of a kind
+                        #print("g")
+                        return threeOfAKindValue(r_counts, s_counts) << 16
+        else :
+            if hasFlush(r_counts, s_counts) :
+                #Quinte flush ou flush tout court
+                f_counts = countForFlush(cards, Card.ranks, Card.suits)
+                quinte_flush_v = quinteFlushValue(f_counts)
+                if quinte_flush_v is not None :
+                    #print("h")
+                    return quinte_flush_v << 56
+                
+                #print("i")
+                return flushValue(f_counts) << 24
+            else :
+                #Straight ou double paire, paire ou carte plus haute
+                max_length, last_index = longestSequenceAndIndex([r_counts[-1]]+r_counts)
+                if max_length >= 5 :
+                    #print("j")
+                    return last_index << 20
+                        
+                arr = [r_counts[i] for i in range(len(r_counts)) if r_counts[i] >= 2]
+                if len(arr) >= 2 :
+                    #Double paire
+                    #print("k")
+                    return doublePairValue(r_counts, s_counts) << 8
+                elif len(arr) == 1 :
+                    #Paire
+                    #print("l")
+                    return arr[0] << 4
+                else :
+                    for i in range(len(r_counts) - 1, -1, -1):
+                        if r_counts[i] != 0:
+                            #print("m")
+                            return i
+                        
+    combi = [[0, 1, 2, 3, 4], [0, 1, 2, 3, 5], [0, 1, 2, 3, 6],
+        [0, 1, 2, 4, 5], [0, 1, 2, 4, 6], [0, 1, 2, 5, 6],
+        [0, 1, 3, 4, 5], [0, 1, 3, 4, 6], [0, 1, 3, 5, 6],
+        [0, 1, 4, 5, 6], [0, 2, 3, 4, 5], [0, 2, 3, 4, 6],
+        [0, 2, 3, 5, 6], [0, 2, 4, 5, 6], [0, 3, 4, 5, 6],
+        [1, 2, 3, 4, 5], [1, 2, 3, 4, 6], [1, 2, 3, 5, 6],
+        [1, 2, 4, 5, 6], [1, 3, 4, 5, 6], [2, 3, 4, 5, 6]]
+    
+    combi3 = [[0,1,2],[0,1,3],[0,1,4],[0,2,3],[0,2,4],[0,3,4],[1,2,3],[1,2,4],[1,3,4],[2,3,4]]
+    
+    def getKeys(self, hand, comb) :
+        return ((hand._cards[0].code << 6) + hand._cards[1].code, (self[comb[0]].code << 12) + (self[comb[1]].code << 6) + self[comb[2]].code)
+
+    def concatName(self, arr, comb) :
+        return (arr[comb[0]].code << 24) + (arr[comb[1]].code << 18) + (arr[comb[2]].code << 12) + (arr[comb[3]].code << 6) + arr[comb[4]].code
+
+    def accessStore(self, store, keys) :
+        return store[str(keys[0])][str(keys[1])]
+    
+    def v3_getHighestValue(self, hand: Hand, store) :
+        #arr = sorted(self._cards+hand._cards, key=lambda card: card.code)
+        return store.readValuesOneD(store.getIdCards(self._cards + hand._cards))[0]
+        
 class Card :
 
+    ranks_map = {'2':0, '3':1, '4':2, '5':3, '6':4, '7':5, '8':6, '9':7, '10':8, 'J':9, 'Q':10, 'K':11, 'A':12}
     ranks=['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'] 
+    suits_map = {'h':0, 'c':1, 's':2, 'd':3}
     suits=['h', 'c', 's', 'd']
 
-    def initFromStr(rank, suit) :
-        return Card(Card.ranks.index(rank),Card.suits.index(suit))
+    def initFromStr(rank_and_suit) :
+        rank, suit = rank_and_suit[:-1], rank_and_suit[-1]
+        return Card(Card.ranks_map[rank],Card.suits_map[suit])
 
     def __init__(self, rank, suit) :
         self.rank = rank
         self.suit = suit
+        self.code = (self.rank << 4) + self.suit
 
     def __str__ (self) :
         return self.ranks[self.rank]+self.suits[self.suit]
@@ -511,79 +629,176 @@ class Card :
     
 if __name__ == "__main__" :
     from utils import saveDictToFile, loadDictFromFile
+    import random
 
-    nb_players = 2
-    nb_try = 2000000
-    deck = [Card(i%13,i//13) for i in range(13*4)]
+    nb_players = 4
+    nb_try = 20 * 1000000
 
+    deck = [Card(i%13,i//13) for i in range(52)]
+
+    """store_path = f"D:/Poker Project/Project/Data/store_keyint2_{nb_players}.json"
+    store = loadDictFromFile(store_path)
+    i = 1
+    for hand in combinations(deck, 2) :
+        if i%1 == 0:
+            print(f"{i/1326*100}%                 ", end="\r")
+        
+        for sub in combinations(deck, 3) :
+            if hand[0] not in sub and hand[1] not in sub :
+                arr = sorted([c.code for c in hand]+[card.code for card in sub])
+                #print(arr)
+                key1 = (arr[0] << 6) + arr[1]
+                key2 = (arr[2] << 12) + (arr[3] << 6) + arr[4]
+                table = Table(sub)
+                if key1 not in store :
+                    store[key1] = {}
+                store[key1][key2] = Table.highestValue(table._cards)
+                #print(len(store))
+        i+=1
+    saveDictToFile(store, store_path)"""
+
+    current_time = time.time()
     preflop_data_path = f"D:/Poker Project/Project/Data/pre-flop_{nb_players}.json"
     storage_preflop = loadDictFromFile(preflop_data_path)
     for sub in combinations(deck, 2) :
         name = str(Hand(sub))
         if not name in storage_preflop :
-            storage_preflop[name] = 0
+            storage_preflop[name] = [0,0]
+        else :
+            break
+    print(f"Loaded pre-flop in {time.time()-current_time}s")
 
+    current_time = time.time()
     flop_data_path = f"D:/Poker Project/Project/Data/flop_{nb_players}.json"
     storage_flop = loadDictFromFile(flop_data_path)
     for sub in combinations(deck, 5) :
         name = str(Table(sub))
         if not name in storage_flop :
-            storage_flop[name] = 0
+            storage_flop[name] = [0,0]
+        else :
+            break
+    print(f"Loaded flop in {time.time()-current_time}s")
+    
+    current_time = time.time()
+    river_data_path = f"D:/Poker Project/Project/Data/river_{nb_players}.json"
+    storage_river = loadDictFromFile(river_data_path)
+    for sub in combinations(deck, 6) :
+        name = str(Table(sub))
+        if not name in storage_river :
+            storage_river[name] = [0,0]
+        else :
+            break
+    print(f"Loaded river in {time.time()-current_time}s")
 
-    def getSampleAndRemove(k, list) :
+    """
+    def old_getSampleAndRemove(k, list) :
         ans = []
         for _ in range(k) :
             card_index = rd.randint(0, len(list)-1)
             ans.append(list[card_index])
             del list[card_index]
-        return ans
+        return ans"""
+    
+    def getSampleAndRemove(k, list) :
+        return list[:k], list[k:]
 
     #orig_hand = Hand([Card(0, 0), Card(1,1)])
     #print(str(orig_hand[0]), str(orig_hand[1]))
     
-    current_time = time.time()
-    for n in range(nb_try) :
-        #hands = [orig_hand]
-        hands = []
-        print(f"{int(n/nb_try*100*100)/100}%", end="\r")
-        #available = [Card(i%13,i//13) for i in range(13*4) if all(i%13 != hands[0][j].rank or i%4 != hands[0][j].suit for j in [0,1])]
-        available = [Card(i%13,i//13) for i in range(13*4)]
+    arr = range(0, 52)
+    def run() :
+        current_time = time.time()
+        for n in range(nb_try) :
+            random_array = random.sample(arr, k=5+2*nb_players)
+            #hands = [orig_hand]
+            hands = []
+            if n % 10000 == 0 :
+                print(f"{int(n/nb_try*100*100)/100}%, {time.time()-current_time}", end="\r")
+            #available = [Card(i%13,i//13) for i in range(13*4) if all(i%13 != hands[0][j].rank or i%4 != hands[0][j].suit for j in [0,1])]
+            available = [Card(i%13,i//13) for i in random_array]
 
-        for i in range(nb_players) :
-            hands.append(Hand(getSampleAndRemove(2, available)))
+            for i in range(nb_players) :
+                sample, available = getSampleAndRemove(2, available)
+                hands.append(Hand(sample))
 
-        table = Table(getSampleAndRemove(5, available))
-        #values = [table.getHighestValue(hand) for hand in hands]
-        #explicit = [Table.explicitValue(value) for value in values]
-        values = [table.new_getHighestValue(hand) for hand in hands]
-        #explicit = [Table.explicitValue(value) for value in values]
+            sample, available = getSampleAndRemove(5, available)
+            table = Table(sample)
+            table.setupStr()
+            #values = [table.getHighestValue(hand) for hand in hands]
+            #explicit = [Table.explicitValue(value) for value in values]
+            #values = [table.v3_getHighestValue(hand, store) for hand in hands]
+            values = [table.new_getHighestValue(hand) for hand in hands]
+            
+            #explicit = [Table.explicitValue(value) for value in values]
 
-        #print(explicit)
-        #print(f"Table : {table}, hands : {','.join(str(hand) for hand in hands)}")
-        #print(sum([abs(values[i]-new_values[i]) for i in range(len(values))]))
+            #print(explicit)
+            #print(f"Table : {table}, hands : {','.join(str(hand) for hand in hands)}")
+            #print(sum([abs(values[i]-new_values[i]) for i in range(len(values))]))
 
-        max_indexes, max_value = [0], values[0]
-        for i in range(len(values)) :
-            if values[i] > max_value :
-                max_indexes, max_value = [i], values[i]
-                break
-            elif values[i] == max_value :
-                max_indexes += [i]
+            max_indexes, max_value = [0], values[0]
+            for i in range(1, len(values)) :
+                if values[i] > max_value :
+                    max_indexes, max_value = [i], values[i]
+                elif values[i] == max_value :
+                    max_indexes += [i]
 
-        for ind in max_indexes :
-            storage_flop[str(Table(hands[ind]._cards+table._cards[:3]))] += 1/len(max_indexes)
-            storage_preflop[str(hands[ind])] += 1/len(max_indexes)
+            for ind in max_indexes :
+                storage_river[str(Table(hands[ind]._cards+table._cards[:4]))][0] += int(1000/len(max_indexes))/1000
+                storage_flop[str(Table(hands[ind]._cards+table._cards[:3]))][0] += int(1000/len(max_indexes))/1000
+                storage_preflop[str(hands[ind])][0] += int(1000/len(max_indexes))/1000
 
-    print(f"Elapsed Time : {int((time.time() - current_time)*100)/100}s")
+            for hand in hands :
+                storage_river[str(Table(hand._cards+table._cards[:4]))][1] += 1
+                storage_flop[str(Table(hand._cards+table._cards[:3]))][1] += 1
+                storage_preflop[str(hand)][1] += 1
 
-    if not "nb_try" in storage_preflop :
-        storage_preflop['nb_try'] = 0
-    storage_preflop["nb_try"] += nb_try
-    storage_preflop["nb_players"] = nb_players
-    if not "nb_try" in storage_flop :
-        storage_flop['nb_try'] = 0
-    storage_flop["nb_try"] += nb_try
-    storage_flop["nb_players"] = nb_players
-    #print(storage)
-    saveDictToFile(storage_preflop, preflop_data_path)
-    saveDictToFile(storage_flop, flop_data_path)
+        print(f"Elapsed Time : {int((time.time() - current_time)*100)/100}s")
+
+        if not "nb_try" in storage_preflop :
+            storage_preflop['nb_try'] = 0
+        storage_preflop["nb_try"] += nb_try
+        storage_preflop["nb_players"] = nb_players
+
+        if not "nb_try" in storage_flop :
+            storage_flop['nb_try'] = 0
+        storage_flop["nb_try"] += nb_try
+        storage_flop["nb_players"] = nb_players
+
+        if not "nb_try" in storage_river :
+            storage_river['nb_try'] = 0
+        storage_river["nb_try"] += nb_try
+        storage_river["nb_players"] = nb_players
+        #print(storage)
+        current_time = time.time()
+        saveDictToFile(storage_preflop, preflop_data_path)
+        print(f"Saved pre-flop in {time.time()-current_time}s")
+        current_time = time.time()
+        saveDictToFile(storage_flop, flop_data_path)
+        print(f"Saved flop in {time.time()-current_time}s")
+        current_time = time.time()
+        saveDictToFile(storage_river, river_data_path)
+        print(f"Saved river in {time.time()-current_time}s")
+        
+
+    import cProfile
+    #cProfile.run('run()', sort='cumulative')
+    run()
+    
+    user_input = ""
+    while True :
+        nb_players = input("Enter nb_players : ")
+        if nb_players in ["e", "ex", "exi", "exit", "quit", "stop"] :
+            break
+        user_input = input("Enter cards : ")
+        if user_input in ["e", "ex", "exi", "exit", "quit", "stop"] :
+            break
+        try :
+            cards = Table.initFromStr(user_input)
+            if len(cards) == 2 :
+                print(computeProbaPreFlop(int(nb_players), cards))
+            elif len(cards) == 5 :
+                print(computeProbaFlop(int(nb_players), cards))
+            elif len(cards) == 6 :
+                print(computeProbaRiver(int(nb_players), cards))
+        except :
+            print("Error ! If you want to exit, type exit")

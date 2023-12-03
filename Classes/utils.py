@@ -16,14 +16,31 @@ def saveDictToFile(dictionary, filename):
     with open(filename, 'w') as file:
         json.dump(dictionary, file)
 
+def getSampleAndRemove(k, list) :
+    return list[:k], list[k:]
+
 """
 C'est Bayes en gros :
 P(Gagner | Main=(card1,card2)) = P(Gagner)*P(Main=(card1,card2) | Gagner) / P(Main=(card1,card2))
 = 1/nb_player * sum(storage[cartes qui t'intéressent])/nb_try * (2 parmi 52) / (2 parmi nb_cartes_qui_intéressent)
 """
-def computeProba(keys, dictionnary) :
-    sum = 0
-    for key in keys :
-        sum += dictionnary[key]
+def computeProbaPreFlop(nb_players, cards) :
+    preflop_data_path = f"D:/Poker Project/Project/Data/pre-flop_{nb_players}.json"
+    dictionnary = loadDictFromFile(preflop_data_path)
 
-    return sum/dictionnary["nb_try"]/dictionnary["nb_players"]*1326/len(keys)
+    return dictionnary[str(cards)][0]/dictionnary[str(cards)][1]
+
+def computeProbaFlop(nb_players, cards) :
+    flop_data_path = f"D:/Poker Project/Project/Data/flop_{nb_players}.json"
+    dictionnary = loadDictFromFile(flop_data_path)
+
+    return dictionnary[str(cards)][0]/dictionnary[str(cards)][1]
+    
+def computeProbaRiver(nb_players, cards) :
+    river_data_path = f"D:/Poker Project/Project/Data/river_{nb_players}.json"
+    dictionnary = loadDictFromFile(river_data_path)
+
+    return dictionnary[str(cards)][0]/dictionnary[str(cards)][1]
+
+if __name__ == "__main__" or True :
+    pass
