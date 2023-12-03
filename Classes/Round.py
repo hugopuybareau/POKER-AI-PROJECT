@@ -7,13 +7,19 @@ positions = ['utg_0', 'utg_1', 'utg_2', 'utg_3', 'small_blind', 'big_blind']
 
 class Round :
 
-    def __init__(self, main_player : MainPlayer, players : list, stage=0, button = 'utg_3') :
+    def __init__(self, main_player : MainPlayer, players : list, button_position) :
         self.pot_bb = 1.5
         self.decision = []
         self.players = players
         self.diff_to_call = 0 
         self.bet = 0
+        self.stage = 0
         self.hand = Hand("Ah-4s")
+
+    def definePlayerPositions(self, main_player, players, button_position) : 
+        button_index = players.index(button_position)
+        for p in range(len(players)) : 
+            players[p].position = positions[p-button_index]
 
     def updateCards(self, cards : list) :
         self.cards = cards

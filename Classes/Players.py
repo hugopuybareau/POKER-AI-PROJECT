@@ -2,9 +2,9 @@ from Cards import Hand
 
 class Player :
 
-    def __init__(self, username : str, position : str, prize_bb : float) :
+    def __init__(self, username : str, prize_bb : float) :
         self.username = username
-        self.position = position
+        self.position = ''
         self.prize_bb = prize_bb
         self.diff_to_call = 0
         self.folded = False
@@ -23,6 +23,6 @@ class Player :
 
 class MainPlayer(Player) :
 
-    def __init__(self, username : str, position : int, prize_bb : float) :
-        Player.__init__(self, username, position, prize_bb)
+    def __init__(self, username : str, prize_bb : float) :
+        Player.__init__(self, username, prize_bb)
         self.hand = " - "
