@@ -7,12 +7,13 @@ positions = ['utg_0', 'utg_1', 'utg_2', 'utg_3', 'small_blind', 'big_blind']
 
 class Round :
 
-    def __init__(self, main_player : MainPlayer, players : list, hand : Hand, pot_bb : float, to_call_bb : float, stage=0, button = 'utg_3') :
-        self.pot_bb = pot_bb
+    def __init__(self, main_player : MainPlayer, players : list, stage=0, button = 'utg_3') :
+        self.pot_bb = 1.5
         self.decision = []
-        self.hand = hand
         self.players = players
-        self.to_call_bb = to_call_bb 
+        self.diff_to_call = 0 
+        self.bet = 0
+        self.hand = Hand("Ah-4s")
 
     def updateCards(self, cards : list) :
         self.cards = cards
@@ -22,6 +23,9 @@ class Round :
 
     def updateStage(self, stage) :
         self.stage += 1
+    
+    def updateDiffToCall(self, pot_bb, bet) : 
+        return(pot_bb-bet)
 
     def updateDecision(self, table : Table, hand : Hand, pot_bb) : 
         if self.stage == 0 : 

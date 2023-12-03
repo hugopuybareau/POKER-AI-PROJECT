@@ -26,7 +26,7 @@ class Game :
 
     def newRound(self, main_player : MainPlayer, players : list) :
 
-        Round()
+        Round(main_player, players,  )
 
     def player_alone(self) :
         count = 0
