@@ -2,9 +2,6 @@ from Players import Player, MainPlayer
 from Cards import *
 from Round import *
 
-
-deals = ['pre_flop', 'flop', 'turn', 'river']
-decisions = ['fold', 'check_fold', 'check', 'call', '3_BB', '2_raise', '50%pot', 'pot' 'all_in']
 positions = ['utg_0', 'utg_1', 'utg_2', 'utg_3', 'small_blind', 'big_blind'] 
 
 class Game :

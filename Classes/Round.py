@@ -1,6 +1,10 @@
 from Players import Player, MainPlayer
 from Cards import *
 
+deals = ['pre_flop', 'flop', 'turn', 'river']
+decisions = ['fold', 'check_fold', 'check', 'call', '3_BB', '2_raise', '50%pot', 'pot' 'all_in']
+positions = ['utg_0', 'utg_1', 'utg_2', 'utg_3', 'small_blind', 'big_blind'] 
+
 class Round :
 
     def __init__(self, main_player : MainPlayer, players : list, hand : Hand, pot_bb : float, to_call_bb : float, stage=0, button = 'utg_3') :
