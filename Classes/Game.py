@@ -10,8 +10,9 @@ class Game :
         self.players = []
         self.button_position = button_position
         self.initPlayers(players_name, players_prize_bb)
+        self.players_name = players_name
 
-    def updateButtonPosition (self, players_name, button_position) : 
+    def updateButtonPosition(self, players_name, button_position) : 
         old_position = button_position
         self.button_position = players_name[players_name.index(old_position)+1]
 
@@ -43,7 +44,11 @@ if __name__ == "__main__" :
     print(game.button_position)
     game.newRound(game.main_player, game.players, game.button_position)
     for p in game.players : 
-        print(game.players.position)
+        print(p.position)
+    game.updateButtonPosition(game.players_name, game.button_position)
+    game.newRound(game.main_player, game.players, game.button_position)
+    for p in game.players : 
+        print(p.position)
 
 
             

@@ -20,7 +20,9 @@ class Round :
         self.redefinePlayerPositions(players, button_position)
 
     def redefinePlayerPositions(self, players, button_position) : 
-        button_index = players.index(players.username == button_position)
+        for p in players :
+            if p.username == button_position :
+                button_index = players.index(p)
         for p in range(len(players)) : 
             players[p].position = positions[p-button_index]
 
