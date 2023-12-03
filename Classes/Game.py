@@ -8,21 +8,21 @@ positions = ['utg_0', 'utg_1', 'utg_2', 'utg_3', 'small_blind', 'big_blind']
 
 class Game :
 
-    def __init__(self, username : str, players_name : list, players_prize_bb : list) :
+    def __init__(self, players_name : list, players_prize_bb : list) :
         
-        self.username = username
         self.main_player = None
         self.players = []
         self.initPlayers(players_name, players_prize_bb)
+        position = []
 
     def initPlayers(self, players_name : list, players_prize_bb : list) :
         players = []
         for i in range(len(players_name)) :
             username = players_name[i]
-            if i != self.position :
-                players.append(Player(username, i, players_prize_bb[i]))
+            if username != 'me' :
+                players.append(Player(username, positions[i], players_prize_bb[i]))
             else :
-                self.main_player = MainPlayer(username, i, players_prize_bb[i])
+                self.main_player = MainPlayer(username, positions[i], players_prize_bb[i])
         
         self.players = players
 
@@ -92,4 +92,11 @@ class Round :
                     self.decisions[0] = decisions[0]
                 if  self.main_player.diff_to_call <= 6 :
                     self.decisions[0] = decisions[3] 
+
+if __name__ == "__main__" : 
+    game = Game(['op1','me', 'op2', 'op3', 'op4', 'op5'], [50] * 6)
+
+print(game.main_player.username)
+
+
             
