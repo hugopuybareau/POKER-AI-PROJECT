@@ -15,8 +15,11 @@ class Round :
         self.bet = 0
         self.stage = 0
         self.hand = Hand("Ah-4s")
+        for p in players :
+            p.position = ''
+        self.redefinePlayerPositions(players, button_position)
 
-    def definePlayerPositions(self, main_player, players, button_position) : 
+    def redefinePlayerPositions(self, players, button_position) : 
         button_index = players.index(button_position)
         for p in range(len(players)) : 
             players[p].position = positions[p-button_index]

@@ -8,6 +8,7 @@ class Game :
         
         self.main_player = None
         self.players = []
+        self.button_position = button_position
         self.initPlayers(players_name, players_prize_bb)
 
     def updateButtonPosition (self, players_name, button_position) : 
@@ -26,9 +27,8 @@ class Game :
         
         self.players = players
 
-    def newRound(self, main_player : MainPlayer, players : list) :
-
-        Round(main_player, players,  )
+    def newRound(self, main_player : MainPlayer, players : list, button_position) :
+        Round(main_player, players, button_position)
 
     def player_alone(self) :
         count = 0
@@ -40,8 +40,6 @@ class Game :
 
 if __name__ == "__main__" : 
     game = Game(['op1', 'me', 'op2', 'op3', 'op4', 'op5'], [50] * 6)
-
-print(game.main_player.username)
 
 
             
