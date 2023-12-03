@@ -26,12 +26,17 @@ FLOP STRATEGY
     - when people flop pairs, they can't fold. so BET BIG
     if better 
     - What should i ask my self before a big CALL : 
-        How likely is raising with the best value hand ?
+        How likely raising with the best value hand at the table ?
     - When the passive players start bombing the pot, FOLD
 
 TURN STRATEGY 
     - Micro stake player do not fold ! Don't bluff late.
         They want to close the loop.
 
+MAIN STRATEGY
+    - OVERFOLD when getting check raised by oppenents
+        (MS players don't check-raise with a bluff)
+    - Stop playing agressive on multiway pots if not premium
+    - We should not be leading on the FLOP except very premium hand
 
 ######## END ########
