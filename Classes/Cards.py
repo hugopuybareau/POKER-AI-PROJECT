@@ -630,7 +630,7 @@ class Card :
 if __name__ == "__main__" :
     from utils import saveDictToFile, loadDictFromFile
     import random
-
+    
     nb_players = 4
     nb_try = 20 * 1000000
 
