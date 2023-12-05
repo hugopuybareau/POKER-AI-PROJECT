@@ -25,7 +25,7 @@ class Game :
         self.players = players
 
     def newRound(self, main_player : MainPlayer, players_name, players, button_position) :
-        round = Round(main_player, players, button_position)
+        round = Round(main_player, players, players_name, button_position)
         old_position = button_position
         self.button_position = players_name[players_name.index(old_position)+1]
 
@@ -40,10 +40,10 @@ class Game :
 if __name__ == "__main__" : 
     game = Game(['op1', 'me', 'op2', 'op3', 'op4', 'op5'], [50] * 6, 'me')
     print(game.button_position)
-    game.newRound(game.main_player, game.players, game.button_position)
+    game.newRound(game.main_player, game.players_name, game.players, game.button_position)
     for p in game.players : 
         print(p.position)
-    game.newRound(game.main_player, game.players, game.button_position)
+    game.newRound(game.main_player, game.players_name, game.players, game.button_position)
     for p in game.players : 
         print(p.position)
 
