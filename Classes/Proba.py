@@ -43,7 +43,7 @@ class Proba :
             image = self.readSegment(i)
             x,y = (i%self.size)*Proba.SEGMENT_SIZE, (i//self.size)*Proba.SEGMENT_SIZE
             x_len,y_len = min(Proba.SEGMENT_SIZE, self.side-x),min(Proba.SEGMENT_SIZE, self.side-y)
-            self.image[y:y+y_len, x:x+x_len] = image[y:y+y_len, x:x+x_len]
+            self.image[y:y+y_len, x:x+x_len] = image[0:y_len, 0:x_len]
         self.one_d = self.image.reshape((-1,2))
 
     def setValuesOneD(self, id, value1, value2) :
@@ -116,6 +116,7 @@ class Proba :
         
     def writeSegment(self, seg_id, sub_img) :
         #print(f"{self._path}/{seg_id}.exr", sub_img.shape)
+        #print(seg_id, sub_img.path)
         pyexr.write(f"{self._path}/{seg_id}.exr", {"won": sub_img[:,:,0], "played": sub_img[:,:,1]})
         
     def loadSegments(self, image = None) :
@@ -123,6 +124,7 @@ class Proba :
         for i in range(self.size**2) :
             if image is None :
                 images[i, 0:Proba.SEGMENT_SIZE,0:Proba.SEGMENT_SIZE] = self.readSegment(i)
+                #print(images[i].shape)
             elif self.side == image.shape[0] or self.size*self.SEGMENT_SIZE == image.shape[0] :
                 x,y = (i%self.size)*Proba.SEGMENT_SIZE, (i//self.size)*Proba.SEGMENT_SIZE
                 x_len,y_len = min(Proba.SEGMENT_SIZE, self.side-x),min(Proba.SEGMENT_SIZE, self.side-y)

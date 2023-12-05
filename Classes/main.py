@@ -19,8 +19,8 @@ if __name__ == "__main__" :
 
     deck = [Card(i%13,i//13) for i in range(52)]
 
-    """turnvalues = Proba.loadOrSetupBlank(f"D:/Poker Project/poker_project/Data/turnvalues", 133784560)#2598960)
-    i = 0
+    turnvalues = Proba.loadOrSetupBlank(f"D:/Poker Project/poker_project/Data/turnvalues", 133784560)#2598960)
+    """i = 0
     for sub in combinations(deck, 7) :
         if i % 20000 == 0 :
             print(i/133784560*100, end="\r")
@@ -46,19 +46,19 @@ if __name__ == "__main__" :
     proba_preflop = Proba.loadOrSetupBlank(p_preflop, data_length=preflop_data_length)
     print(f"Loaded pre-flop in {time.time()-current_time}s")
 
-    print(proba_preflop.getIdFromKey("2c-4h"))
-    print(proba_preflop.readValuesOneD(proba_preflop.getIdFromKey("2c-4h")))
-
 
     """for i in range(preflop_data_length):
         print(proba_preflop.readValuesOneD(i))
     raise"""
 
-    """current_time = time.time()
+    current_time = time.time()
     flop_data_length = 2598960
     p_flop = f"D:/Poker Project/poker_project/Data/flop/{nb_players}"
     proba_flop = Proba.loadOrSetupBlank(p_flop, data_length=flop_data_length)
     print(f"Loaded flop in {time.time()-current_time}s")
+
+    print(proba_flop.getIdFromKey("2c-4h-7h-8h-9h"))
+    print(proba_flop.readValuesOneD(proba_flop.getIdFromKey("2c-4h-7h-8h-9h")))
 
     current_time = time.time()
     river_data_length = 20358520
@@ -70,7 +70,7 @@ if __name__ == "__main__" :
     turn_data_length = 133784560
     p_turn = f"D:/Poker Project/poker_project/Data/turn/{nb_players}"
     proba_turn = Proba.loadOrSetupBlank(p_turn, data_length=turn_data_length)
-    print(f"Loaded turn in {time.time()-current_time}s")"""
+    print(f"Loaded turn in {time.time()-current_time}s")
 
     """print(proba_preflop.readProba("2c-4h"))
     print(storage_preflop["2c-4h"][0]/storage_preflop["2c-4h"][1])"""
@@ -141,8 +141,8 @@ if __name__ == "__main__" :
             #table.setupStr()
             #values = [table.getHighestValue(hand) for hand in hands]
             #explicit = [Table.explicitValue(value) for value in values]
-            #values = [table.v3_getHighestValue(hand, turnvalues) for hand in hands]
-            values = [table.new_getHighestValue(hand) for hand in hands]
+            values = [table.v3_getHighestValue(hand, turnvalues) for hand in hands]
+            #values = [table.new_getHighestValue(hand) for hand in hands]
             
             #explicit = [Table.explicitValue(value) for value in values]
 
@@ -154,12 +154,9 @@ if __name__ == "__main__" :
                     max_indexes += [i]
                 
             ids_preflop = [Proba.getIdCards(hand._cards) for hand in hands]
-            """ids_flop = [Proba.getIdCards(hand._cards+table._cards[:3]) for hand in hands]
-            #print(ids_flop)
+            ids_flop = [Proba.getIdCards(hand._cards+table._cards[:3]) for hand in hands]
             ids_river = [Proba.getIdCards(hand._cards+table._cards[:4]) for hand in hands]
-            #print(ids_river)
             ids_turn = [Proba.getIdCards(hand._cards+table._cards) for hand in hands]
-            #print(ids_turn)"""
 
             for ind in max_indexes :
                 """storage_river[str(Table(hands[ind]._cards+table._cards[:4]))][0] += int(1000/len(max_indexes))/1000
@@ -170,19 +167,17 @@ if __name__ == "__main__" :
                     print(explicit)
                     val[0] += 1"""
                 proba_preflop.addValuesOneD(ids_preflop[ind], 1, 0)
-                """proba_flop.addValuesOneD(ids_flop[ind], 1, 0)
+                proba_flop.addValuesOneD(ids_flop[ind], 1, 0)
                 proba_river.addValuesOneD(ids_river[ind], 1, 0)
-                proba_turn.addValuesOneD(ids_turn[ind], 1, 0)"""
+                proba_turn.addValuesOneD(ids_turn[ind], 1, 0)
             for id in ids_preflop :
-                """if id == 57 :
-                    val[1] += 1"""
                 proba_preflop.addValuesOneD(id, 0, 1)
-            """for id in ids_flop :
+            for id in ids_flop :
                 proba_flop.addValuesOneD(id, 0, 1)
             for id in ids_river :
                 proba_river.addValuesOneD(id, 0, 1)
             for id in ids_turn :
-                proba_turn.addValuesOneD(id, 0, 1)"""
+                proba_turn.addValuesOneD(id, 0, 1)
                 #storage_river[str(Table(hand._cards+table._cards[:4]))][1] += 1
                 #storage_flop[str(Table(hand._cards+table._cards[:3]))][1] += 1
 
@@ -209,13 +204,16 @@ if __name__ == "__main__" :
         saveDictToFile(storage_preflop, preflop_data_path)
         print(f"Saved pre-flop in {time.time()-current_time}s")"""
 
+        current_time = time.time()
         proba_preflop.writeSegments()
 
-        print(proba_preflop.getIdFromKey("2c-4h"))
-        print(proba_preflop.readValuesOneD(proba_preflop.getIdFromKey("2c-4h")))
-        """proba_flop.writeSegments()
+        print(proba_flop.getIdFromKey("2c-4h-7h-8h-9h"))
+        print(proba_flop.readValuesOneD(proba_flop.getIdFromKey("2c-4h-7h-8h-9h")))
+
+        proba_flop.writeSegments()
         proba_river.writeSegments()
-        proba_turn.writeSegments()"""
+        proba_turn.writeSegments()
+        print(f"Saved in {time.time()-current_time}s")
 
         """plt.subplot(1, 4, 1)
         plt.imshow(proba_preflop.image)
