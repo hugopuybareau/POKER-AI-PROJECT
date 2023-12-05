@@ -29,13 +29,6 @@ class Game :
         old_position = button_position
         self.button_position = players_name[players_name.index(old_position)+1]
 
-    def playerAlone(self) :
-        count = 0
-        for p in self.players :
-            if p.isFolded() :
-                count += 1
-            
-        return count == len(self.players)
 
 if __name__ == "__main__" : 
     game = Game(['op1', 'me', 'op2', 'op3', 'op4', 'op5'], [50] * 6, 'me')

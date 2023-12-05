@@ -34,8 +34,16 @@ class Round :
     def updateStage(self, stage) :
         self.stage += 1
     
-    def updateDiffToCall(self, pot_bb, bet) : 
+    def updateDiffToCallBB(self, pot_bb, bet) : 
         return(pot_bb-bet)
+    
+    def playerAlone(self) :
+        count = 0
+        for p in self.players :
+            if p.isFolded() :
+                count += 1
+            
+        return count == len(self.players)
 
     def updateDecision(self, table : Table, hand : Hand, pot_bb) : 
         if self.stage == 0 : 
