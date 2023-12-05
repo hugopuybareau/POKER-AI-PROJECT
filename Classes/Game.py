@@ -40,5 +40,10 @@ if __name__ == "__main__" :
     for p in game.players : 
         print(p.position)
 
+    testhand = Hand([Card.initFromStr('As'),Card.initFromStr("4h")])
+    testtable = Table.initFromStr('Ks 7h 4c')
+    print(testtable)
+    
+
 
             

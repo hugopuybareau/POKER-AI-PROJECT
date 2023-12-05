@@ -242,6 +242,18 @@ class Hand :
     def strArr(self) :
         return [str(self._cards[0]), str(self._cards[1])]
     
+    def isSuited(self) : 
+        if self._cards[0].suit == self._card[1].suit : 
+            return True 
+        else :
+            return False 
+    
+    def getCompatibleHand(self) : 
+        if self.isSuited(self) : 
+            return(str(self._cards[0].rank)+'-'+str(self._cards[1].rank)+'s')
+        else : 
+            return(str(self._cards[0].rank)+'-'+str(self._cards[1].rank))
+    
 class Table :
 
     def __init__(self, cards) :
