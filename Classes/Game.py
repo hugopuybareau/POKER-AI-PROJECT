@@ -43,6 +43,23 @@ if __name__ == "__main__" :
     testhand = Hand([Card.initFromStr('As'),Card.initFromStr("4h")])
     testtable = Table.initFromStr('Ks 7h 4c')
     print(testtable)
+
+    testround = Round(game.main_player, game.players, game.players_name, game.button_position)
+    print(testround.decision)
+    print(testround.pot_bb)
+    print(testround.diff_to_call)
+    print(testround.stage)
+    testround.updatePotBB(100)
+    testround.updateDiffToCallBB(50)
+    #testround.updateStage()
+    testround.updateDecision(testtable, testhand)
+    print('--------------')
+    print(testround.main_player.position)
+    print(testround.decision)
+    print(testround.pot_bb)
+    print(testround.diff_to_call)
+    print(testround.stage)
+
     
 
 
