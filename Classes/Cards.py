@@ -264,10 +264,6 @@ class Table :
         arr = cards_str.strip().split("-")
         return Table([Card.initFromStr(c_str) for c_str in arr])
 
-    def initFromStr(cards_str) :
-        arr = cards_str.strip().split(" ")
-        return Table([Card.initFromStr(c_str) for c_str in arr])
-
     def __add__(self, other) :
         return self._cards + other._cards
 
@@ -292,104 +288,6 @@ class Table :
     def sortByRank(self) :
         self._cards = sorted(self._cards, key=lambda card: (card.rank, card.suit))
 
-    def getQuinteFlushValue(self, hand : Hand) :
-        cards = self + hand
-        rank = -1
-        cards_sorted = sorted(cards, key=lambda card: card.rank)
-        for j in range(4) :
-            sub_cards = cards_sorted[j:j+5]
-            suits = set(card.suit for card in sub_cards)
-            if len(suits) == 1:
-                if all(sub_cards[i].rank == sub_cards[i-1].rank + 1 for i in range(1, len(sub_cards))) :
-                    rank = max(rank, sub_cards[0].rank)
-                elif [card.rank for card in sub_cards] == [0,1,2,3,13] :
-                    rank = max(rank, 0)
-        return [rank]
-    
-    def getFourOfAKindValue(self, hand : Hand) :
-        cards = self + hand
-        rank = -1
-        ranks_sorted = sorted(card.rank for card in cards)
-        for i in range(5) :
-            sub_ranks = ranks_sorted[i:i+4]
-            if all(sub_ranks[i] == sub_ranks[i-1] for i in range(1, len(sub_ranks))) :
-                rank = max(rank, sub_ranks[-1])
-        return [rank]
-    
-    def getFullHouseValue(self, hand : Hand):
-        cards = self + hand
-        rank_3, rank_2 = -1, -1
-        for subs in combinations(cards, 5):
-            ranks = sorted(card.rank for card in subs)
-            if len(set(ranks)) == 2:
-                count_1 = ranks.count(ranks[0])
-                count_2 = ranks.count(ranks[-1])
-                if (count_1 == 2 and count_2 == 3) or (count_1 == 3 and count_2 == 2):
-                    rank_3 = max(rank_3, ranks[2])
-                    rank_2 = max(rank_2, ranks[0 if count_1 == 2 else -1])
-        return [rank_3, rank_2]
-    
-    def getFlushValue(self, hand : Hand) :
-        cards = self + hand
-        rank = [-1]*5
-        for subs in combinations(cards, 5) :
-            suits = set(card.suit for card in subs)
-            if len(suits) == 1 :
-                ranks = sorted([card.rank for card in cards], reverse=True)
-                j = 0
-                while ranks[j] == rank[j] and j < 5:
-                    j+=1
-                if j < 5 and ranks[j] > rank[j] :
-                    rank = ranks
-        return rank
-
-    def getStraightValue(self, hand : Hand) :
-        cards = self + hand
-        rank = -1
-        ranks_sorted = sorted(card.rank for card in cards)
-        for j in range(4) :
-            sub_ranks = ranks_sorted[j:j+5]
-            if all(sub_ranks[i] == sub_ranks[i-1] + 1 for i in range(1, len(sub_ranks))) :
-                rank = max(rank, sub_ranks[0]+1)
-            elif sub_ranks == [0,1,2,3,13] :
-                rank = max(rank, 0)
-        return [rank]
-    
-    def getThreeOfAKindValue(self, hand : Hand) :
-        cards = self + hand
-        rank = -1
-        ranks_sorted = sorted(card.rank for card in cards)
-        for i in range(6) :
-            sub_ranks = ranks_sorted[i:i+3]
-            if all(sub_ranks[i] == sub_ranks[i-1] for i in range(1, len(sub_ranks))) :
-                rank = max(rank, sub_ranks[-1])
-        return [rank]
-
-    def getDoublePairValue(self, hand : Hand) :
-        cards = self + hand
-        rank1, rank2 = -1, -1
-        for subs in combinations(cards, 4) :
-            ranks = sorted(card.rank for card in subs)
-            count_1 = ranks.count(ranks[0])
-            count_2 = ranks.count(ranks[-1])
-            if count_1 == 2 and count_2 == 2 :
-                rank2 = max(ranks[-1], rank2)
-                rank1 = max(ranks[0], rank1)
-        return [rank2, rank1]
-            
-    def getPairValue(self, hand : Hand) :
-        cards = self + hand
-        rank = -1
-        for subs in combinations(cards, 2):
-            ranks = set(card.rank for card in subs)
-            if len(ranks) == 1 :
-                rank = max(rank, list(ranks)[-1])
-        return [rank]
-    
-    def getHighCardValue(self, hand : Hand) :
-        cards = self + hand
-        return [sorted(card.rank for card in cards)[-1]]
-                        
     def explicitValue(value) :
         for i in range(len(Table.shifts)) :
             v_shifted = value >> Table.shifts[i]
@@ -401,10 +299,6 @@ class Table :
                "Three Of A Kind", "Double Pair",
                "Pair", "High Card"]
     
-    funcs = [getQuinteFlushValue, getFourOfAKindValue,
-                     getFullHouseValue, getFlushValue, getStraightValue,
-                     getThreeOfAKindValue, getDoublePairValue,
-                     getPairValue, getHighCardValue]
     shifts = [56, 52, 44, 24, 20, 16, 8, 4, 0]
 
     """
@@ -428,90 +322,6 @@ class Table :
     -> 60 bits
 
     """
-    def getHighestValue(self, hand : Hand) :
-        i = 0
-        while i < len(Table.funcs) :
-            value = Table.funcs[i](self, hand)
-            if value[0] > -1 :
-                ret = 0
-                for j in range(len(value)) :
-                    ret += value[j] << (len(value)-1-j)*4
-                return ret << Table.shifts[i]
-            i += 1
-    
-    def highestValue(cards) :
-        r_counts, s_counts = countRankAndSuits(cards, Card.ranks, Card.suits)
-        if hasThreeOfAKindOrMore(r_counts, s_counts) :
-            #Possiblement full house ou four of a kind ou three of a kind ou quinte flush ou flush
-            if hasFourOfAKind(r_counts, s_counts) :
-                #four of a kind, donc impossible de straight
-                #print("a")
-                return fourOfAKindValue(r_counts, s_counts) << 52
-            elif hasFlush(r_counts, s_counts) :
-                #quinte flush ou f_house ou flush tt court
-                if hasFullHouse(r_counts, s_counts) :
-                    #Full house forcément
-                    #print("b")
-                    return fullHouseValue(r_counts, s_counts) << 44
-                else :
-                    #Quinte flush ou flush tout court
-                    f_counts = countForFlush(cards, Card.ranks, Card.suits)
-                    quinte_flush_v = quinteFlushValue(f_counts)
-                    if quinte_flush_v is not None :
-                        #print("c")
-                        return quinte_flush_v << 56
-                    
-                    #print("d")
-                    return flushValue(f_counts) << 24 #On a dj vérifié qu'il y avait une flush donc pas besoin de reverif
-            else :
-                #f_house ou three of a kind ou straight
-                f_house = hasFullHouse(r_counts, s_counts)
-                if f_house :
-                    #Full house forcément
-                    #print("e")
-                    return fullHouseValue(r_counts, s_counts) << 44
-                else :
-                    #three of a kind ou straight
-                    max_length, last_index = longestSequenceAndIndex([r_counts[-1]]+r_counts)
-                    if max_length >= 5 :
-                        #print("f")
-                        return last_index << 20 #Valeur pour straight 
-                    else :
-                        #three of a kind
-                        #print("g")
-                        return threeOfAKindValue(r_counts, s_counts) << 16
-        else :
-            if hasFlush(r_counts, s_counts) :
-                #Quinte flush ou flush tout court
-                f_counts = countForFlush(cards, Card.ranks, Card.suits)
-                quinte_flush_v = quinteFlushValue(f_counts)
-                if quinte_flush_v is not None :
-                    #print("h")
-                    return quinte_flush_v << 56
-                
-                #print("i")
-                return flushValue(f_counts) << 24
-            else :
-                #Straight ou double paire, paire ou carte plus haute
-                max_length, last_index = longestSequenceAndIndex([r_counts[-1]]+r_counts)
-                if max_length >= 5 :
-                    #print("j")
-                    return last_index << 20
-                        
-                arr = [r_counts[i] for i in range(len(r_counts)) if r_counts[i] >= 2]
-                if len(arr) >= 2 :
-                    #Double paire
-                    #print("k")
-                    return doublePairValue(r_counts, s_counts) << 8
-                elif len(arr) == 1 :
-                    #Paire
-                    #print("l")
-                    return arr[0] << 4
-                else :
-                    for i in range(len(r_counts) - 1, -1, -1):
-                        if r_counts[i] != 0:
-                            #print("m")
-                            return i
 
     def new_getHighestValue(self, hand :Hand = None) :
         if hand is None :
@@ -591,27 +401,7 @@ class Table :
                             #print("m")
                             return i
                         
-    combi = [[0, 1, 2, 3, 4], [0, 1, 2, 3, 5], [0, 1, 2, 3, 6],
-        [0, 1, 2, 4, 5], [0, 1, 2, 4, 6], [0, 1, 2, 5, 6],
-        [0, 1, 3, 4, 5], [0, 1, 3, 4, 6], [0, 1, 3, 5, 6],
-        [0, 1, 4, 5, 6], [0, 2, 3, 4, 5], [0, 2, 3, 4, 6],
-        [0, 2, 3, 5, 6], [0, 2, 4, 5, 6], [0, 3, 4, 5, 6],
-        [1, 2, 3, 4, 5], [1, 2, 3, 4, 6], [1, 2, 3, 5, 6],
-        [1, 2, 4, 5, 6], [1, 3, 4, 5, 6], [2, 3, 4, 5, 6]]
-    
-    combi3 = [[0,1,2],[0,1,3],[0,1,4],[0,2,3],[0,2,4],[0,3,4],[1,2,3],[1,2,4],[1,3,4],[2,3,4]]
-    
-    def getKeys(self, hand, comb) :
-        return ((hand._cards[0].code << 6) + hand._cards[1].code, (self[comb[0]].code << 12) + (self[comb[1]].code << 6) + self[comb[2]].code)
-
-    def concatName(self, arr, comb) :
-        return (arr[comb[0]].code << 24) + (arr[comb[1]].code << 18) + (arr[comb[2]].code << 12) + (arr[comb[3]].code << 6) + arr[comb[4]].code
-
-    def accessStore(self, store, keys) :
-        return store[str(keys[0])][str(keys[1])]
-    
     def v3_getHighestValue(self, hand: Hand, store) :
-        #arr = sorted(self._cards+hand._cards, key=lambda card: card.code)
         return store.readValuesOneD(store.getIdCards(self._cards + hand._cards))[0]
         
 class Card :

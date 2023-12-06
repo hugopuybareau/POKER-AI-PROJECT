@@ -33,6 +33,18 @@ class Proba :
         elif loadWhole :
             self.loadWhole()
 
+    def stats(self) :
+        if self.one_d is not None :
+            targ = self.one_d[:,1]
+            targ = targ[targ != 0]
+            return (np.mean(targ),np.std(targ), np.min(targ))
+        elif self.image is not None :
+            targ = self.image[:,:,1]
+            targ = targ[targ != 0]
+            return (np.mean(targ),np.std(targ), np.min(targ))
+        else :
+            return -1
+
     def thresh(self, threshold) :
         if self.one_d is not None :
             return 100-np.count_nonzero(self.one_d[:,1] < threshold)/self.one_d.shape[0]*100
