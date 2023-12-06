@@ -33,6 +33,14 @@ class Proba :
         elif loadWhole :
             self.loadWhole()
 
+    def thresh(self, threshold) :
+        if self.one_d is not None :
+            return 100-np.count_nonzero(self.one_d[:,1] < threshold)/self.one_d.shape[0]*100
+        elif self.image is not None :
+            return 100-np.count_nonzero(self.image[:,:,1] < threshold)/self.image.shape[0]/self.image.shape[1]*100
+        else :
+            return -1
+
     def loadWhole(self, image=None) :
         if image is not None :
             self.image = image

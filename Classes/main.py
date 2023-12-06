@@ -1,5 +1,5 @@
 #from Classes.Game import *
-from utils import loadDictFromFile, getSampleAndRemove, saveDictToFile
+from utils import getSampleAndRemove
 from Cards import Card, Hand, Table
 from Proba import Proba
 import time
@@ -15,7 +15,7 @@ if __name__ == "__main__" :
     print("Nie nie nie moi c'est le client j'ai besoin qu'on m'epelle les mots sinon je comprends pas")
 
     nb_players = 2
-    nb_try = 1000000
+    nb_try = 100000000
 
     deck = [Card(i%13,i//13) for i in range(52)]
 
@@ -31,25 +31,11 @@ if __name__ == "__main__" :
     turnvalues.writeSegments()
     raise"""
 
-    """preflop_data_path = f"D:/Poker Project/poker_project/Data/pre-flop_{nb_players}.json"
-    storage_preflop = loadDictFromFile(preflop_data_path)
-    for sub in combinations(deck, 2) :
-        name = str(Table(sub))
-        if not name in storage_preflop :
-            storage_preflop[name] = [0,0]
-        else :
-            break"""
-
     current_time = time.time()
     preflop_data_length = 1326
     p_preflop = f"D:/Poker Project/poker_project/Data/pre-flop/{nb_players}"
     proba_preflop = Proba.loadOrSetupBlank(p_preflop, data_length=preflop_data_length)
     print(f"Loaded pre-flop in {time.time()-current_time}s")
-
-
-    """for i in range(preflop_data_length):
-        print(proba_preflop.readValuesOneD(i))
-    raise"""
 
     current_time = time.time()
     flop_data_length = 2598960
@@ -57,7 +43,6 @@ if __name__ == "__main__" :
     proba_flop = Proba.loadOrSetupBlank(p_flop, data_length=flop_data_length)
     print(f"Loaded flop in {time.time()-current_time}s")
 
-    print(proba_flop.getIdFromKey("2c-4h-7h-8h-9h"))
     print(proba_flop.readValuesOneD(proba_flop.getIdFromKey("2c-4h-7h-8h-9h")))
 
     current_time = time.time()
@@ -72,65 +57,14 @@ if __name__ == "__main__" :
     proba_turn = Proba.loadOrSetupBlank(p_turn, data_length=turn_data_length)
     print(f"Loaded turn in {time.time()-current_time}s")
 
-    """print(proba_preflop.readProba("2c-4h"))
-    print(storage_preflop["2c-4h"][0]/storage_preflop["2c-4h"][1])"""
-    
-    """current_time = time.time()
-    flop_data_path = f"D:/Poker Project/poker_project/Data/flop_{nb_players}.json"
-    storage_flop = loadDictFromFile(flop_data_path)
-    for sub in combinations(deck, 5) :
-        name = str(Table(sub))
-        if not name in storage_flop :
-            storage_flop[name] = [0,0]
-        else :
-            break
-    print(f"Loaded flop in {time.time()-current_time}s")
-    
-    current_time = time.time()
-    river_data_path = f"D:/Poker Project/poker_project/Data/river_{nb_players}.json"
-    storage_river = loadDictFromFile(river_data_path)
-    for sub in combinations(deck, 6) :
-        name = str(Table(sub))
-        if not name in storage_river :
-            storage_river[name] = [0,0]
-        else :
-            break
-    print(f"Loaded river in {time.time()-current_time}s")"""
-
     arr = range(0, 52)
-    val = [0,0]
     def run() :
-        """def sort_one(available):
-            sample, available = getSampleAndRemove(6, available)
-            hands = [None]*nb_players
-            for i in range(nb_players) :
-                hands[i] = Hand(sample[i*2:i*2+2])
-            return hands
-        def sort_two(available):
-            hands = [None]*nb_players
-            for i in range(nb_players) :
-                sample, available = getSampleAndRemove(2, available)
-                hands[i] = Hand(sample)
-            return hands
-        random_array = random.sample(arr, k=5+2*nb_players)
-        available = [Card(i%13,i//13) for i in random_array]
-        sample, available = getSampleAndRemove(7, available)
-        for i in range(1000000) :
-            if i%1000 == 0 :
-                print(i/1000000*100, end="\r")
-            random_array = random.sample(arr, k=5+2*nb_players)
-            available = [Card(i%13,i//13) for i in random_array]
-            #id_one = sort_one(available)
-            id_two = sort_two(available)
-        raise"""
         current_time = time.time()
         for n in range(nb_try) :
             random_array = random.sample(arr, k=5+2*nb_players)
-            #hands = [orig_hand]
             hands = [None]*nb_players
             if n % 10000 == 0 :
                 print(f"{int(n/nb_try*100*100)/100}%, {time.time()-current_time}", end="\r")
-            #available = [Card(i%13,i//13) for i in range(13*4) if all(i%13 != hands[0][j].rank or i%4 != hands[0][j].suit for j in [0,1])]
             available = [Card(i%13,i//13) for i in random_array]
 
             sample, available = getSampleAndRemove(nb_players*2, available)
@@ -138,13 +72,7 @@ if __name__ == "__main__" :
                 hands[i] = Hand(sample[i*2:i*2+2])
 
             table = Table(available)
-            #table.setupStr()
-            #values = [table.getHighestValue(hand) for hand in hands]
-            #explicit = [Table.explicitValue(value) for value in values]
             values = [table.v3_getHighestValue(hand, turnvalues) for hand in hands]
-            #values = [table.new_getHighestValue(hand) for hand in hands]
-            
-            #explicit = [Table.explicitValue(value) for value in values]
 
             max_indexes, max_value = [0], values[0]
             for i in range(1, len(values)) :
@@ -159,55 +87,21 @@ if __name__ == "__main__" :
             ids_turn = [Proba.getIdCards(hand._cards+table._cards) for hand in hands]
 
             for ind in max_indexes :
-                """storage_river[str(Table(hands[ind]._cards+table._cards[:4]))][0] += int(1000/len(max_indexes))/1000
-                storage_flop[str(Table(hands[ind]._cards+table._cards[:3]))][0] += int(1000/len(max_indexes))/1000"""
-                #storage_preflop[str(hands[ind])][0] += 1
-                """if ids_preflop[ind] == 57 :
-                    print(f"Table : {table}, hands : {','.join(str(hand) for hand in hands)}")
-                    print(explicit)
-                    val[0] += 1"""
                 proba_preflop.addValuesOneD(ids_preflop[ind], 1, 0)
                 proba_flop.addValuesOneD(ids_flop[ind], 1, 0)
                 proba_river.addValuesOneD(ids_river[ind], 1, 0)
                 proba_turn.addValuesOneD(ids_turn[ind], 1, 0)
-            for id in ids_preflop :
-                proba_preflop.addValuesOneD(id, 0, 1)
-            for id in ids_flop :
-                proba_flop.addValuesOneD(id, 0, 1)
-            for id in ids_river :
-                proba_river.addValuesOneD(id, 0, 1)
-            for id in ids_turn :
-                proba_turn.addValuesOneD(id, 0, 1)
-                #storage_river[str(Table(hand._cards+table._cards[:4]))][1] += 1
-                #storage_flop[str(Table(hand._cards+table._cards[:3]))][1] += 1
+            for i in range(nb_players) :
+                proba_preflop.addValuesOneD(ids_preflop[i], 0, 1)
+                proba_flop.addValuesOneD(ids_flop[i], 0, 1)
+                proba_river.addValuesOneD(ids_river[i], 0, 1)
+                proba_turn.addValuesOneD(ids_turn[i], 0, 1)
 
         print(f"Elapsed Time : {int((time.time() - current_time)*100)/100}s")
-        print(val)
-        """if not "nb_try" in storage_preflop :
-            storage_preflop['nb_try'] = 0
-        storage_preflop["nb_try"] += nb_try
-        storage_preflop["nb_players"] = nb_players"""
-
-        """if not "nb_try" in storage_flop :
-            storage_flop['nb_try'] = 0
-        storage_flop["nb_try"] += nb_try
-        storage_flop["nb_players"] = nb_players
-
-        if not "nb_try" in storage_river :
-            storage_river['nb_try'] = 0
-        storage_river["nb_try"] += nb_try
-        storage_river["nb_players"] = nb_players"""
-        #print(storage)
-        """print(proba_preflop.readValuesWhole("2c-4h"))
-        print(storage_preflop["2c-4h"])
-        current_time = time.time()
-        saveDictToFile(storage_preflop, preflop_data_path)
-        print(f"Saved pre-flop in {time.time()-current_time}s")"""
 
         current_time = time.time()
         proba_preflop.writeSegments()
 
-        print(proba_flop.getIdFromKey("2c-4h-7h-8h-9h"))
         print(proba_flop.readValuesOneD(proba_flop.getIdFromKey("2c-4h-7h-8h-9h")))
 
         proba_flop.writeSegments()
@@ -215,22 +109,10 @@ if __name__ == "__main__" :
         proba_turn.writeSegments()
         print(f"Saved in {time.time()-current_time}s")
 
-        """plt.subplot(1, 4, 1)
-        plt.imshow(proba_preflop.image)
-        plt.subplot(1, 4, 2)
-        plt.imshow(proba_flop.image)
-        plt.subplot(1, 4, 3)
-        plt.imshow(proba_river.image)
-        plt.subplot(1, 4, 4)
-        plt.imshow(proba_river.image)
-        plt.show()"""
-        """current_time = time.time()
-        saveDictToFile(storage_flop, flop_data_path)
-        print(f"Saved flop in {time.time()-current_time}s")
-        current_time = time.time()
-        saveDictToFile(storage_river, river_data_path)
-        print(f"Saved river in {time.time()-current_time}s")"""
-        
+        print("Pre-flop", proba_preflop.thresh(10), proba_preflop.thresh(30), proba_preflop.thresh(50))
+        print("Flop", proba_flop.thresh(10), proba_flop.thresh(30), proba_flop.thresh(50))
+        print("River", proba_river.thresh(10), proba_river.thresh(30), proba_river.thresh(50))
+        print("Turn", proba_turn.thresh(10), proba_turn.thresh(30), proba_turn.thresh(50))
 
     import cProfile
     #cProfile.run('run()', sort='cumulative')
